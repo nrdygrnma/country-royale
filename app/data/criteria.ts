@@ -88,6 +88,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "higher-is-better",
     category: "Work & Opportunity",
+    mode: "auto",
+    sourceKey: "worldbank:doing_business",
   },
 
   // Infrastructure & Practicalities
@@ -104,6 +106,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 6,
     direction: "higher-is-better",
     category: "Infrastructure & Practicalities",
+    mode: "auto",
+    sourceKey: "worldbank:internet_usage",
   },
   {
     label: "Internet quality",
@@ -193,8 +197,10 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     label: "Air quality",
     description: "Low pollution levels",
     weight: 6,
-    direction: "higher-is-better",
+    direction: "lower-is-better",
     category: "Health & Environment",
+    mode: "auto",
+    sourceKey: "worldbank:air_pollution",
   },
 
   // Risk
@@ -213,6 +219,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "higher-is-better",
     category: "Risk",
+    mode: "auto",
+    sourceKey: "worldbank:political_stability",
   },
   {
     label: "Natural disaster risk",
@@ -220,6 +228,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 8,
     direction: "lower-is-better",
     category: "Risk",
+    mode: "auto",
+    sourceKey: "worldbank:disaster_risk",
   },
 ];
 
@@ -292,7 +302,7 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         label: "Air quality",
         description: "Pollution levels",
         weight: 8,
-        direction: "higher-is-better",
+        direction: "lower-is-better",
       },
     ],
   },
@@ -346,7 +356,7 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         label: "Air quality",
         description: "Low pollution and healthier daily baseline",
         weight: 9,
-        direction: "higher-is-better",
+        direction: "lower-is-better",
       },
       {
         label: "Climate fit",

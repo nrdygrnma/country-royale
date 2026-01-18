@@ -116,18 +116,48 @@
                   <span class="text-xs text-gray-500 line-clamp-1">{{
                     (row.original as Criterion).description || "—"
                   }}</span>
-                  <span
-                    v-if="(row.original as Criterion).mode === 'auto'"
-                    class="text-[10px] text-blue-500 font-medium flex items-center gap-1"
-                  >
-                    <UIcon class="w-3 h-3" name="i-lucide-database" />
-                    {{
-                      DATA_SOURCES.find(
-                        (s) =>
-                          s.value === (row.original as Criterion).sourceKey,
-                      )?.label || (row.original as Criterion).sourceKey
-                    }}
-                  </span>
+                  <UTooltip>
+                    <template #text>
+                      <div class="flex flex-col gap-1 max-w-xs">
+                        <span class="font-bold">{{
+                          DATA_SOURCES.find(
+                            (s) =>
+                              s.value === (row.original as Criterion).sourceKey,
+                          )?.label || (row.original as Criterion).sourceKey
+                        }}</span>
+                        <span
+                          v-if="
+                            DATA_SOURCES.find(
+                              (s) =>
+                                s.value ===
+                                (row.original as Criterion).sourceKey,
+                            )?.description
+                          "
+                          class="text-[10px] opacity-80 leading-tight"
+                        >
+                          {{
+                            DATA_SOURCES.find(
+                              (s) =>
+                                s.value ===
+                                (row.original as Criterion).sourceKey,
+                            )?.description
+                          }}
+                        </span>
+                      </div>
+                    </template>
+                    <span
+                      v-if="(row.original as Criterion).mode === 'auto'"
+                      class="text-[10px] text-blue-500 font-medium flex items-center gap-1"
+                    >
+                      <UIcon class="w-3 h-3" name="i-lucide-database" />
+                      {{
+                        DATA_SOURCES.find(
+                          (s) =>
+                            s.value === (row.original as Criterion).sourceKey,
+                        )?.label || (row.original as Criterion).sourceKey
+                      }}
+                    </span>
+                  </UTooltip>
                 </div>
               </template>
 
@@ -229,29 +259,33 @@
         description="Provide a label and description for the criterion"
       >
         <div class="p-4 space-y-4">
-          <UFormField label="Category">
-            <USelectMenu
-              :items="categoryOptions"
-              :model-value="
-                categoryOptions.find((o) => o.value === criterionDraft.category)
-              "
-              class="w-1/2"
-              placeholder="Select category..."
-              @update:model-value="
-                (v: any) => {
-                  criterionDraft.category = v?.value;
-                }
-              "
-            />
-          </UFormField>
+          <div class="grid grid-cols-2 gap-2">
+            <UFormField label="Category">
+              <USelectMenu
+                :items="categoryOptions"
+                :model-value="
+                  categoryOptions.find(
+                    (o) => o.value === criterionDraft.category,
+                  )
+                "
+                class="w-full"
+                placeholder="Select category..."
+                @update:model-value="
+                  (v: any) => {
+                    criterionDraft.category = v?.value;
+                  }
+                "
+              />
+            </UFormField>
 
-          <UFormField label="Label">
-            <UInput
-              v-model="criterionDraft.label"
-              class="w-full"
-              placeholder="e.g. Speed of Internet"
-            />
-          </UFormField>
+            <UFormField label="Label">
+              <UInput
+                v-model="criterionDraft.label"
+                class="w-full"
+                placeholder="e.g. Speed of Internet"
+              />
+            </UFormField>
+          </div>
 
           <UFormField label="Description">
             <UInput
@@ -261,56 +295,76 @@
             />
           </UFormField>
 
-          <div class="grid grid-cols-2 gap-4">
-            <UFormField label="Mode">
-              <USelectMenu
-                :items="[
+          <UFormField label="Mode">
+            <USelectMenu
+              :items="[
+                { label: 'Manual Scoring', value: 'manual' },
+                {
+                  label: 'Auto-Data Mode',
+                  value: 'auto',
+                },
+              ]"
+              :model-value="
+                [
                   { label: 'Manual Scoring', value: 'manual' },
-                  {
-                    label: 'Auto-Data Mode',
-                    value: 'auto',
-                    disabled: !criterionDraft.sourceKey,
-                  },
-                ]"
-                :model-value="
-                  [
-                    { label: 'Manual Scoring', value: 'manual' },
-                    { label: 'Auto-Data Mode', value: 'auto' },
-                  ].find((i) => i.value === criterionDraft.mode)
-                "
-                class="w-full"
-                @update:model-value="
-                  (v: any) => {
-                    criterionDraft.mode = v?.value;
+                  { label: 'Auto-Data Mode', value: 'auto' },
+                ].find((i) => i.value === criterionDraft.mode)
+              "
+              class="w-full"
+              @update:model-value="
+                (v: any) => {
+                  criterionDraft.mode = v?.value;
+                  if (v?.value === 'auto' && !criterionDraft.sourceKey) {
+                    toast.add({
+                      title: 'Select a data source',
+                      description:
+                        'Auto-mode requires a data source to be selected.',
+                      color: 'warning',
+                    });
                   }
-                "
-              />
-            </UFormField>
+                }
+              "
+            />
+          </UFormField>
 
-            <UFormField label="Data Source">
-              <USelectMenu
-                :items="[
+          <UFormField label="Data Source">
+            <template
+              v-if="
+                DATA_SOURCES.find((s) => s.value === criterionDraft.sourceKey)
+                  ?.description
+              "
+              #description
+            >
+              <span class="text-[10px] leading-tight text-gray-400">
+                {{
+                  DATA_SOURCES.find((s) => s.value === criterionDraft.sourceKey)
+                    ?.description
+                }}
+              </span>
+            </template>
+            <USelectMenu
+              :items="[
+                { label: 'None (Manual only)', value: undefined },
+                ...DATA_SOURCES,
+              ]"
+              :model-value="
+                [
                   { label: 'None (Manual only)', value: undefined },
                   ...DATA_SOURCES,
-                ]"
-                :model-value="
-                  [
-                    { label: 'None (Manual only)', value: undefined },
-                    ...DATA_SOURCES,
-                  ].find((s) => s.value === criterionDraft.sourceKey)
-                "
-                class="w-full"
-                placeholder="Select source..."
-                value-attribute="value"
-                @update:model-value="
-                  (v: any) => {
-                    criterionDraft.sourceKey = v?.value;
-                    if (!v?.value) criterionDraft.mode = 'manual';
-                  }
-                "
-              />
-            </UFormField>
-          </div>
+                ].find((s) => s.value === criterionDraft.sourceKey)
+              "
+              class="w-full"
+              placeholder="Select source..."
+              value-attribute="value"
+              @update:model-value="
+                (v: any) => {
+                  criterionDraft.sourceKey = v?.value;
+                  if (!v?.value) criterionDraft.mode = 'manual';
+                  else criterionDraft.mode = 'auto';
+                }
+              "
+            />
+          </UFormField>
 
           <div class="grid grid-cols-2 gap-4">
             <UFormField>
@@ -361,7 +415,13 @@
               @click="isCriterionModalOpen = false"
               >Cancel</UButton
             >
-            <UButton :disabled="!criterionDraft.label" @click="saveCriterion">
+            <UButton
+              :disabled="
+                !criterionDraft.label ||
+                (criterionDraft.mode === 'auto' && !criterionDraft.sourceKey)
+              "
+              @click="saveCriterion"
+            >
               {{ editingCriterion ? "Update" : "Add" }}
             </UButton>
           </div>

@@ -141,14 +141,30 @@
                   </div>
                 </div>
                 <div class="flex items-center justify-between gap-4">
-                  <UTooltip
-                    :text="
-                      DATA_SOURCES.find(
-                        (s) => s.value === activeCriterion?.sourceKey,
-                      )?.label || activeCriterion?.sourceKey
-                    "
-                    class="min-w-0 flex-1"
-                  >
+                  <UTooltip class="min-w-0 flex-1">
+                    <template #text>
+                      <div class="flex flex-col gap-1 max-w-xs">
+                        <span class="font-bold">{{
+                          DATA_SOURCES.find(
+                            (s) => s.value === activeCriterion?.sourceKey,
+                          )?.label || activeCriterion?.sourceKey
+                        }}</span>
+                        <span
+                          v-if="
+                            DATA_SOURCES.find(
+                              (s) => s.value === activeCriterion?.sourceKey,
+                            )?.description
+                          "
+                          class="text-[10px] opacity-80 leading-tight"
+                        >
+                          {{
+                            DATA_SOURCES.find(
+                              (s) => s.value === activeCriterion?.sourceKey,
+                            )?.description
+                          }}
+                        </span>
+                      </div>
+                    </template>
                     <div
                       class="flex items-center gap-2 text-xs text-blue-500 font-semibold truncate"
                     >
@@ -907,6 +923,24 @@ const formatRawValue = (value: any, sourceKey?: string) => {
   }
 
   if (typeof value === "number") {
+    if (sourceKey === "worldbank:political_stability") {
+      return value > 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
+    }
+    if (sourceKey === "worldbank:internet_usage") {
+      return `${value.toFixed(1)}%`;
+    }
+    if (sourceKey === "worldbank:air_pollution") {
+      return `${value.toFixed(1)} μg/m³`;
+    }
+    if (sourceKey === "worldbank:doing_business") {
+      return `${value.toFixed(1)} / 100`;
+    }
+    if (sourceKey === "worldbank:gdp") {
+      return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+    }
+    if (sourceKey === "worldbank:disaster_risk") {
+      return `${value.toFixed(3)}%`;
+    }
     return value.toLocaleString();
   }
 
@@ -978,6 +1012,22 @@ const getInterpretation = computed(() => {
   }
   if (sourceKey === "wikipedia:literacy_rate") {
     return `A high literacy rate is an indicator of the country's investment in education and human development. Scores are normalized against ${modeText}.`;
+  }
+  if (sourceKey === "worldbank:disaster_risk") {
+    return `Represents the average annual percentage of the population affected by natural disasters. Higher percentages indicate greater vulnerability or more frequent extreme events.`;
+  }
+
+  if (sourceKey === "worldbank:political_stability") {
+    return `The Political Stability indicator measures perceptions of the likelihood of political instability and/or politically-motivated violence. Raw values typically range from -2.5 (weak) to 2.5 (strong). Higher values indicate a more stable and peaceful environment.`;
+  }
+  if (sourceKey === "worldbank:doing_business") {
+    return `The Ease of Doing Business score (0-100) measures how close an economy is to the best regulatory practices. A higher score indicates a more business-friendly environment.`;
+  }
+  if (sourceKey === "worldbank:internet_usage") {
+    return `This represents the percentage of the population using the internet. It serves as a proxy for infrastructure quality and connectivity.`;
+  }
+  if (sourceKey === "worldbank:air_pollution") {
+    return `Mean annual exposure to PM2.5 air pollution (micrograms per cubic meter). Higher values indicate worse air quality. Scores are calculated so that lower pollution yields a higher 1-10 score.`;
   }
 
   return `The scores were normalized based on a ${modeText} of your selection of countries.`;

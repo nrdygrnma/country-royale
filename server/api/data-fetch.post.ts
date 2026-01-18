@@ -173,6 +173,46 @@ export default defineEventHandler(async (event) => {
           } else if (sourceKey === "numbeo:crime_index") {
             value = crimeIndexMap[code] || 40 + Math.random() * 20;
           }
+        } else if (sourceKey === "worldbank:political_stability") {
+          // World Bank API: Political Stability and Absence of Violence/Terrorism - PV.EST
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/PV.EST?format=json&mrnev=1`,
+          );
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:doing_business") {
+          // World Bank API: Ease of doing business score - IC.BUS.DFRN.XQ
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/IC.BUS.DFRN.XQ?format=json&mrnev=1`,
+          );
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:internet_usage") {
+          // World Bank API: Individuals using the Internet (% of population) - IT.NET.USER.ZS
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/IT.NET.USER.ZS?format=json&mrnev=1`,
+          );
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:air_pollution") {
+          // World Bank API: PM2.5 air pollution, mean annual exposure (micrograms per cubic meter) - EN.ATM.PM25.MC.M3
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/EN.ATM.PM25.MC.M3?format=json&mrnev=1`,
+          );
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:disaster_risk") {
+          // World Bank API: Percentage of population affected by natural disasters - EN.CLC.MDAT.ZS
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/EN.CLC.MDAT.ZS?format=json&mrnev=1`,
+          );
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
         } else if (sourceKey === "wikipedia:literacy_rate") {
           // Wikipedia via MediaWiki API
           // We'll try to fetch literacy rate. This is complex because it's usually in a table.

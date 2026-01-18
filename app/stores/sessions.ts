@@ -413,6 +413,21 @@ export const useSessionsStore = defineStore("sessions", () => {
         id: makeId(),
       }));
     } else {
+      // Sync preset changes to master criteria (e.g. if a preset changed from manual to auto)
+      PRESET_CRITERIA.forEach((pc) => {
+        const existing = data.masterCriteria?.find(
+          (mc) => mc.label === pc.label,
+        );
+        if (existing) {
+          // Update mode and sourceKey if they changed in presets
+          if (pc.mode && existing.mode !== pc.mode) {
+            existing.mode = pc.mode;
+          }
+          if (pc.sourceKey && existing.sourceKey !== pc.sourceKey) {
+            existing.sourceKey = pc.sourceKey;
+          }
+        }
+      });
       masterCriteria.value = data.masterCriteria;
     }
 
