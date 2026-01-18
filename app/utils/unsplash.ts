@@ -27,13 +27,17 @@ export async function fetchCountryImage(
         Math.random() * Math.min(photos.length, 5),
       );
       const photo = photos[randomIndex];
-      const imageUrl = photo.urls?.regular;
+      const imageUrl = photo.urls?.small || photo.urls?.regular;
       const attribution =
         photo.sponsorship?.sponsor?.name || photo.user?.name || "Unsplash";
 
       if (imageUrl) {
+        // Append size parameters to the URL to ensure it's not too large
+        const optimizedUrl = imageUrl.includes("?")
+          ? `${imageUrl}&w=800&q=80&auto=format`
+          : `${imageUrl}?w=800&q=80&auto=format`;
         return {
-          url: imageUrl,
+          url: optimizedUrl,
           attribution,
         };
       }

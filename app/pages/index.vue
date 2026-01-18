@@ -5,16 +5,17 @@
         <!-- Hero Section -->
         <div
           :class="[
-            'relative overflow-hidden transition-all duration-700',
+            'relative overflow-hidden transition-all duration-700 bg-gray-900',
             store.sessions.length === 0
-              ? 'rounded-3xl bg-gray-900 px-6 py-20 shadow-2xl sm:px-12 sm:py-32 lg:px-20'
-              : 'rounded-2xl bg-gray-900 p-6 shadow-xl sm:px-8 sm:py-10',
+              ? 'rounded-3xl px-6 py-20 shadow-2xl sm:px-12 sm:py-32 lg:px-20'
+              : 'rounded-2xl p-6 shadow-xl sm:px-8 sm:py-10',
           ]"
         >
           <img
-            :src="`https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop&client_id=${UNSPLASH_CLIENT_ID}`"
+            :src="`https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=60&w=1200&auto=format&fit=crop&client_id=${UNSPLASH_CLIENT_ID}`"
             alt=""
             class="absolute inset-0 h-full w-full object-cover opacity-20 mix-blend-overlay"
+            @error="(e: any) => (e.target.style.display = 'none')"
           />
           <div :class="['relative mx-auto max-w-2xl text-center']">
             <h2
@@ -140,11 +141,15 @@
                 }"
                 @click="goToSession(s.id)"
               >
-                <div class="relative h-32 overflow-hidden">
+                <div
+                  class="relative h-32 overflow-hidden bg-gray-100 dark:bg-gray-800"
+                >
                   <img
+                    v-if="getSessionImage(s)"
                     :src="getSessionImage(s)"
                     alt=""
                     class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    @error="(e: any) => (e.target.style.display = 'none')"
                   />
                   <div
                     class="absolute inset-0 bg-linear-to-t from-gray-900/80 to-transparent"
@@ -331,9 +336,8 @@ const getSessionImage = (session: any) => {
     }
   }
 
-  // Use a stable, high-quality default image that isn't the "featured" redirect
-  // This is a beautiful aerial shot of a world map/landscape that fits the "Country Royale" theme
-  return `https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1080&auto=format&fit=crop&client_id=${UNSPLASH_CLIENT_ID}`;
+  // Use a stable, lower-res default image for better performance
+  return `https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=60&w=800&auto=format&fit=crop&client_id=${UNSPLASH_CLIENT_ID}`;
 };
 
 onMounted(() => {
