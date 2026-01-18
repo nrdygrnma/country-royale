@@ -1,0 +1,36 @@
+{
+  "name": "country-royale",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.82",
+    "@iconify-json/simple-icons": "^1.2.63",
+    "@nuxt/ui": "^4.3.0",
+    "@pinia/nuxt": "0.11.3",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/node": "^25.0.9",
+    "apexcharts": "^5.3.6",
+    "nuxt": "^4.2.2",
+    "pinia": "^3.0.4",
+    "tailwindcss": "^4.1.18",
+    "vue3-apexcharts": "^1.10.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.12.1",
+    "eslint": "^9.39.2",
+    "prettier": "^3.8.0",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.2.1"
+  },
+  "overrides": {
+    "@tiptap/core": "3.13.0"
+  }
+}
