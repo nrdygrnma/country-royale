@@ -1,4 +1,8 @@
-import type { ComparisonSession, Country, Criterion } from "~/types/countryRoyale";
+import type {
+  ComparisonSession,
+  Country,
+  Criterion,
+} from "~/types/countryRoyale";
 import type { CriteriaSet } from "~/data/criteria";
 
 const STORAGE_KEY = "country-royale:sessions:v1";
@@ -19,6 +23,13 @@ export default defineNuxtPlugin((nuxtApp) => {
         ? (JSON.parse(rawCustom) as Country[])
         : [];
 
+      const rawMasterCountries = localStorage.getItem(
+        `${STORAGE_KEY}:master-countries`,
+      );
+      persisted.value.masterCountries = rawMasterCountries
+        ? (JSON.parse(rawMasterCountries) as Country[])
+        : [];
+
       const rawPresets = localStorage.getItem(`${STORAGE_KEY}:user-presets`);
       persisted.value.userPresets = rawPresets
         ? (JSON.parse(rawPresets) as CriteriaSet[])
@@ -36,6 +47,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     } catch {
       persisted.value.sessions = [];
       persisted.value.customCountries = [];
+      persisted.value.masterCountries = [];
       persisted.value.userPresets = [];
       persisted.value.masterCriteria = [];
       persisted.value.masterCategories = [];

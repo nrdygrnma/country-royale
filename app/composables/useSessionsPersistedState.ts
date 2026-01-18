@@ -9,6 +9,7 @@ export const useSessionsPersistedState = () =>
   useState<{
     sessions: ComparisonSession[];
     customCountries: Country[];
+    masterCountries: Country[];
     userPresets: CriteriaSet[];
     masterCriteria: Criterion[];
     masterCategories: string[];
@@ -16,6 +17,7 @@ export const useSessionsPersistedState = () =>
   }>("country-royale:persisted", () => ({
     sessions: [],
     customCountries: [],
+    masterCountries: [],
     userPresets: [],
     masterCriteria: [],
     masterCategories: [],

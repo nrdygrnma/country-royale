@@ -29,11 +29,19 @@
         </UButton>
         <UButton
           color="neutral"
+          icon="i-lucide-earth"
+          to="/countries"
+          variant="ghost"
+        >
+          Countries
+        </UButton>
+        <UButton
+          color="neutral"
           icon="i-lucide-library"
           to="/criteria"
           variant="ghost"
         >
-          Library
+          Criteria Library
         </UButton>
       </nav>
     </div>

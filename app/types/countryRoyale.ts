@@ -11,12 +11,16 @@ export interface Criterion {
   weight: number;
   direction: "higher-is-better" | "lower-is-better";
   category?: string;
+  mode?: "manual" | "auto";
+  sourceKey?: string;
+  lastFetched?: string;
 }
 
 export interface CountryScore {
   countryCode: string;
   criterionId: string;
   score: number;
+  rawValue?: string | number;
 }
 
 export interface ComparisonSession {
@@ -26,5 +30,7 @@ export interface ComparisonSession {
   criteria: Criterion[];
   scores: CountryScore[];
   notes?: Record<string, string>;
+  coverImage?: string;
+  coverImageAttribution?: string;
   createdAt: string;
 }

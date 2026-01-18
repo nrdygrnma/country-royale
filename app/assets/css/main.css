@@ -21,3 +21,11 @@
 button {
   @apply cursor-pointer;
 }
+
+.hero-input input {
+  @apply text-white!;
+}
+
+.hero-input input::placeholder {
+  @apply text-white/50!;
+}

@@ -1,13 +1,38 @@
 <template>
-  <div class="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+  <div class="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
     <SessionWizardHeader />
 
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex items-center justify-between gap-4 py-1">
       <div class="space-y-0.5">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        <h1
+          class="text-lg font-bold text-gray-900 dark:text-white leading-none"
+        >
           Scoring
         </h1>
-        <p class="text-xs text-gray-500">One criterion at a time</p>
+        <div class="flex items-center gap-1.5">
+          <p class="text-[10px] text-gray-500 font-medium">
+            Criterion {{ currentIndex + 1 }}/{{ session?.criteria.length }}
+          </p>
+          <div class="h-0.5 w-0.5 rounded-full bg-gray-300"></div>
+          <p class="text-[10px] text-gray-500 font-medium">
+            {{ scoredInCurrent }}/{{ totalCountries }} scored
+          </p>
+          <div
+            v-if="criterionProgress.length > 0"
+            class="h-0.5 w-0.5 rounded-full bg-gray-300"
+          ></div>
+          <p
+            v-if="criterionProgress.length > 0"
+            class="text-[10px] text-gray-500 font-medium"
+          >
+            <span class="font-black text-primary-500">
+              {{ criterionProgress.filter((p) => p.done).length }}/{{
+                criterionProgress.length
+              }}
+            </span>
+            complete
+          </p>
+        </div>
       </div>
 
       <div class="flex gap-2">
@@ -48,252 +73,228 @@
       </UCard>
 
       <template v-else>
-        <UCard :ui="{ body: 'p-3 sm:p-4' }">
+        <UCard :ui="{ body: 'p-0' }">
           <div
-            class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+            class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-gray-800"
           >
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <div class="text-base font-semibold">
-                  {{ activeCriterion?.label }}
+            <!-- Left: Criterion Info -->
+            <div class="p-4 sm:p-6 space-y-4">
+              <div class="space-y-1">
+                <div class="flex items-center flex-wrap gap-2">
+                  <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                    {{ activeCriterion?.label }}
+                  </h2>
+                  <div class="flex items-center gap-1.5">
+                    <UBadge
+                      v-if="activeCriterion?.mode === 'auto'"
+                      color="secondary"
+                      size="xs"
+                      variant="soft"
+                    >
+                      <UIcon class="mr-1" name="i-lucide-database" />
+                      Auto
+                    </UBadge>
+                    <UBadge class="font-mono" size="xs" variant="subtle"
+                      >w{{ activeCriterion?.weight }}</UBadge
+                    >
+                    <UBadge
+                      :color="
+                        activeCriterion?.direction === 'higher-is-better'
+                          ? 'primary'
+                          : 'warning'
+                      "
+                      size="xs"
+                      variant="soft"
+                    >
+                      {{
+                        activeCriterion?.direction === "higher-is-better"
+                          ? "↑ Higher is better"
+                          : "↓ Lower is better"
+                      }}
+                    </UBadge>
+                  </div>
                 </div>
-                <UBadge size="xs" variant="subtle"
-                  >w{{ activeCriterion?.weight }}</UBadge
+                <p
+                  v-if="activeCriterion?.description"
+                  class="text-sm text-gray-500"
                 >
-                <UBadge
-                  :color="
-                    activeCriterion?.direction === 'higher-is-better'
-                      ? 'primary'
-                      : 'warning'
-                  "
-                  size="xs"
-                  variant="soft"
-                >
-                  {{
-                    activeCriterion?.direction === "higher-is-better"
-                      ? "↑ higher is better"
-                      : "↓ lower is better"
-                  }}
-                </UBadge>
+                  {{ activeCriterion.description }}
+                </p>
               </div>
+
               <div
-                v-if="activeCriterion?.description"
-                class="text-xs opacity-60"
+                v-if="activeCriterion?.sourceKey"
+                class="flex flex-col gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800"
               >
-                {{ activeCriterion.description }}
+                <div class="flex items-center justify-between">
+                  <div
+                    class="text-[10px] font-bold uppercase tracking-widest text-gray-400"
+                  >
+                    Data Automation
+                  </div>
+                  <div
+                    v-if="activeCriterion?.lastFetched"
+                    class="text-[10px] text-gray-400"
+                  >
+                    Synced:
+                    {{ new Date(activeCriterion.lastFetched).toLocaleString() }}
+                  </div>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                  <UTooltip
+                    :text="
+                      DATA_SOURCES.find(
+                        (s) => s.value === activeCriterion?.sourceKey,
+                      )?.label || activeCriterion?.sourceKey
+                    "
+                    class="min-w-0 flex-1"
+                  >
+                    <div
+                      class="flex items-center gap-2 text-xs text-blue-500 font-semibold truncate"
+                    >
+                      <UIcon
+                        class="w-4 h-4 shrink-0"
+                        name="i-lucide-database"
+                      />
+                      <span class="truncate">
+                        {{
+                          DATA_SOURCES.find(
+                            (s) => s.value === activeCriterion?.sourceKey,
+                          )?.label || activeCriterion?.sourceKey
+                        }}
+                      </span>
+                    </div>
+                  </UTooltip>
+                  <div class="flex gap-1 shrink-0">
+                    <UButton
+                      v-if="activeCriterion?.mode === 'auto'"
+                      :loading="isSyncing"
+                      color="secondary"
+                      size="xs"
+                      @click="syncCurrentCriterion"
+                      >Sync</UButton
+                    >
+                    <UButton
+                      v-if="activeCriterion?.mode === 'auto'"
+                      color="secondary"
+                      size="xs"
+                      variant="ghost"
+                      @click="viewStoredData"
+                      >View</UButton
+                    >
+                    <UButton
+                      :color="
+                        activeCriterion?.mode === 'auto'
+                          ? 'neutral'
+                          : 'secondary'
+                      "
+                      :variant="
+                        activeCriterion?.mode === 'auto' ? 'ghost' : 'soft'
+                      "
+                      size="xs"
+                      @click="
+                        switchCriterionMode(
+                          activeCriterion?.mode === 'auto' ? 'manual' : 'auto',
+                        )
+                      "
+                    >
+                      {{
+                        activeCriterion?.mode === "auto"
+                          ? "Manual Mode"
+                          : "Switch to Auto"
+                      }}
+                    </UButton>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-              <UBadge size="xs" variant="soft">
-                {{ storedCountCurrent }}/{{ session.countryCodes.length }}
-              </UBadge>
+            <!-- Right: Navigation & Progress -->
+            <div
+              class="p-4 sm:p-6 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col justify-between gap-6"
+            >
+              <div class="flex items-center justify-between gap-4">
+                <div class="space-y-1">
+                  <div
+                    class="text-[10px] font-bold uppercase tracking-widest text-gray-400"
+                  >
+                    Progress
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl font-black tabular-nums">{{
+                      storedCountCurrent
+                    }}</span>
+                    <span class="text-gray-400">/</span>
+                    <span class="text-lg font-bold text-gray-500">{{
+                      session.countryCodes.length
+                    }}</span>
+                    <UBadge
+                      v-if="isCurrentComplete"
+                      class="ml-2"
+                      color="success"
+                      size="xs"
+                      variant="soft"
+                      >Complete</UBadge
+                    >
+                  </div>
+                </div>
 
-              <UBadge
-                v-if="isCurrentComplete"
-                color="success"
-                size="xs"
-                variant="soft"
-              >
-                complete
-              </UBadge>
+                <div class="flex flex-col items-end gap-2">
+                  <div
+                    class="text-[10px] font-bold uppercase tracking-widest text-gray-400"
+                  >
+                    Navigation
+                  </div>
+                  <USelectMenu
+                    :items="criterionOptions"
+                    :model-value="currentCriterion"
+                    class="w-48"
+                    size="sm"
+                    @update:model-value="(v: any) => setCriterionFromSelect(v)"
+                  />
+                </div>
+              </div>
 
-              <USelectMenu
-                :items="criterionOptions"
-                :model-value="currentCriterion"
-                class="w-40"
-                size="xs"
-                @update:model-value="(v: any) => setCriterionFromSelect(v)"
-              />
-              <UButton
-                :disabled="!hasPrev"
-                size="xs"
-                variant="soft"
-                @click="goPrevCriterion"
-                >Prev</UButton
-              >
-              <UButton
-                :disabled="!hasNext"
-                size="xs"
-                variant="soft"
-                @click="goNextCriterion"
-                >Next</UButton
-              >
-              <UTooltip text="Jump to first incomplete">
-                <UButton
-                  :disabled="!firstIncompleteCriterionId"
-                  icon="i-lucide-list-todo"
-                  size="xs"
-                  variant="ghost"
-                  @click="jumpToFirstIncomplete"
-                />
-              </UTooltip>
-              <UButton size="xs" variant="ghost" @click="fillThisCriterionWith5"
-                >Fill 5</UButton
-              >
-              <UTooltip text="Toggle Battle Mode">
-                <UButton
-                  :color="battleMode ? 'primary' : 'neutral'"
-                  icon="i-lucide-swords"
-                  size="xs"
-                  variant="ghost"
-                  @click="toggleBattleMode"
-                >
-                  Battle
-                </UButton>
-              </UTooltip>
-            </div>
-          </div>
-        </UCard>
-
-        <!-- Battle Mode UI -->
-        <UCard v-if="battleMode" :ui="{ body: 'p-4' }">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div
-                class="text-sm font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2"
-              >
-                <UIcon class="w-4 h-4" name="i-lucide-swords" />
-                Pairwise Battle
-                <UPopover :popper="{ placement: 'bottom-start' }">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex gap-1">
+                  <UButton
+                    :disabled="!hasPrev"
+                    icon="i-lucide-chevron-left"
+                    size="sm"
+                    variant="soft"
+                    @click="goPrevCriterion"
+                  />
+                  <UButton
+                    :disabled="!hasNext"
+                    icon="i-lucide-chevron-right"
+                    size="sm"
+                    variant="soft"
+                    @click="goNextCriterion"
+                  />
+                  <UTooltip text="Jump to first incomplete">
+                    <UButton
+                      :disabled="!firstIncompleteCriterionId"
+                      icon="i-lucide-list-todo"
+                      size="sm"
+                      variant="ghost"
+                      @click="jumpToFirstIncomplete"
+                    />
+                  </UTooltip>
+                </div>
+                <div class="flex gap-2">
                   <UButton
                     color="neutral"
-                    icon="i-lucide-info"
-                    size="xs"
+                    size="sm"
                     variant="ghost"
-                  />
-                  <template #content>
-                    <div class="p-4 w-64 text-xs space-y-2">
-                      <p class="font-bold">How Battle Mode works:</p>
-                      <p>
-                        Clicking on a country's name button adds
-                        <span class="font-bold text-primary-500">+1 point</span
-                        >. You can also use the
-                        <span class="font-bold text-error-500">-</span> button
-                        to <span class="font-bold text-error-500">reduce</span>
-                        its score.
-                      </p>
-                      <p>
-                        This is a great way to break ties or refine your ranking
-                        by comparing countries head-to-head.
-                      </p>
-                    </div>
-                  </template>
-                </UPopover>
-              </div>
-              <div class="text-[10px] text-gray-400">
-                Pick the winner for
-                <span class="font-bold text-primary-500">{{
-                  activeCriterion?.label
-                }}</span>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-center gap-4 py-4">
-              <!-- Country A -->
-              <div class="flex-1 space-y-3">
-                <USelectMenu
-                  :items="
-                    session.countryCodes.map((c) => ({
-                      label: codeToName.get(c) ?? c,
-                      value: c,
-                    }))
-                  "
-                  :model-value="
-                    session.countryCodes
-                      .map((c) => ({ label: codeToName.get(c) ?? c, value: c }))
-                      .find((i) => i.value === battleCountries[0])
-                  "
-                  class="w-full"
-                  @update:model-value="
-                    (v: any) => selectBattleCountry(0, v.value)
-                  "
-                />
-                <div class="flex items-center gap-2">
-                  <UButton
-                    block
-                    class="flex-1 h-24 text-lg font-bold"
-                    color="primary"
-                    variant="subtle"
-                    @click="recordBattleWin(battleCountries[0]!)"
+                    @click="fillThisCriterionWith5"
+                    >Fill All 5s</UButton
                   >
-                    {{
-                      codeToName.get(battleCountries[0]!) ?? battleCountries[0]
-                    }}
-                  </UButton>
-                  <UButton
-                    class="h-24 w-12 shrink-0"
-                    color="error"
-                    icon="i-lucide-minus"
-                    variant="soft"
-                    @click="recordBattleLoss(battleCountries[0]!)"
-                  />
-                </div>
-                <div class="text-center text-xs opacity-50 tabular-nums">
-                  Current: {{ getScore(battleCountries[0]!) }}
                 </div>
               </div>
-
-              <div class="flex flex-col gap-2">
-                <div class="text-xl font-black italic opacity-20">VS</div>
-                <UButton size="xs" variant="ghost" @click="recordBattleTie">
-                  Tie
-                </UButton>
-              </div>
-
-              <!-- Country B -->
-              <div class="flex-1 space-y-3">
-                <USelectMenu
-                  :items="
-                    session.countryCodes.map((c) => ({
-                      label: codeToName.get(c) ?? c,
-                      value: c,
-                    }))
-                  "
-                  :model-value="
-                    session.countryCodes
-                      .map((c) => ({ label: codeToName.get(c) ?? c, value: c }))
-                      .find((i) => i.value === battleCountries[1])
-                  "
-                  class="w-full"
-                  @update:model-value="
-                    (v: any) => selectBattleCountry(1, v.value)
-                  "
-                />
-                <div class="flex items-center gap-2">
-                  <UButton
-                    block
-                    class="flex-1 h-24 text-lg font-bold"
-                    color="primary"
-                    variant="subtle"
-                    @click="recordBattleWin(battleCountries[1]!)"
-                  >
-                    {{
-                      codeToName.get(battleCountries[1]!) ?? battleCountries[1]
-                    }}
-                  </UButton>
-                  <UButton
-                    class="h-24 w-12 shrink-0"
-                    color="error"
-                    icon="i-lucide-minus"
-                    variant="soft"
-                    @click="recordBattleLoss(battleCountries[1]!)"
-                  />
-                </div>
-                <div class="text-center text-xs opacity-50 tabular-nums">
-                  Current: {{ getScore(battleCountries[1]!) }}
-                </div>
-              </div>
-            </div>
-
-            <div class="text-[10px] text-center opacity-60">
-              Winning a battle increases that country's score by +1. Ties
-              average them.
             </div>
           </div>
         </UCard>
 
-        <!-- Scoring list (country rows) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="lg:col-span-2 space-y-6">
             <UCard>
@@ -348,7 +349,7 @@
                           icon="i-lucide-rotate-ccw"
                           size="xs"
                           variant="ghost"
-                          @click="setScore(code, 5)"
+                          @click="resetToBaseline(code)"
                         />
                       </UTooltip>
                     </div>
@@ -387,34 +388,58 @@
                     :key="c.id"
                     class="flex flex-col gap-2 rounded-md border border-gray-100 p-3 dark:border-gray-800"
                   >
-                    <div class="flex items-center justify-between gap-2">
-                      <div class="min-w-0">
-                        <div class="font-medium truncate">{{ c.label }}</div>
-                        <div class="text-xs opacity-60">
-                          w{{ c.weight }} ·
-                          <span
-                            :class="
-                              c.direction === 'higher-is-better'
-                                ? 'text-primary-500'
-                                : 'text-warning-500'
+                    <div class="space-y-1">
+                      <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                          <div class="font-medium truncate">{{ c.label }}</div>
+                        </div>
+                        <div class="flex items-center gap-1.5 ml-2">
+                          <UButton
+                            color="neutral"
+                            icon="i-lucide-rotate-ccw"
+                            size="xs"
+                            variant="ghost"
+                            @click="
+                              () => {
+                                const existing = session!.scores.find(
+                                  (x) =>
+                                    x.countryCode === selectedCountry! &&
+                                    x.criterionId === c.id,
+                                );
+                                store.setScore(
+                                  selectedCountry!,
+                                  c.id,
+                                  5,
+                                  existing?.rawValue,
+                                );
+                              }
                             "
-                            class="font-medium"
+                          />
+                          <UBadge
+                            class="tabular-nums w-12 justify-center"
+                            variant="soft"
                           >
-                            {{
-                              c.direction === "higher-is-better"
-                                ? "↑ higher"
-                                : "↓ lower"
-                            }}
-                          </span>
+                            {{ getScoreFor(selectedCountry!, c.id) }}
+                          </UBadge>
                         </div>
                       </div>
-
-                      <UBadge
-                        class="tabular-nums w-12 justify-center"
-                        variant="soft"
-                      >
-                        {{ getScoreFor(selectedCountry!, c.id) }}
-                      </UBadge>
+                      <div class="text-xs opacity-60">
+                        w{{ c.weight }} ·
+                        <span
+                          :class="
+                            c.direction === 'higher-is-better'
+                              ? 'text-primary-500'
+                              : 'text-warning-500'
+                          "
+                          class="font-medium"
+                        >
+                          {{
+                            c.direction === "higher-is-better"
+                              ? "↑ higher"
+                              : "↓ lower"
+                          }}
+                        </span>
+                      </div>
                     </div>
 
                     <USlider
@@ -431,85 +456,6 @@
             </UCard>
           </div>
         </div>
-
-        <UCard :ui="{ body: 'p-3 sm:p-4' }">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="font-medium text-sm">Progress overview</div>
-                <UBadge size="xs" variant="soft">
-                  {{ criterionProgress.filter((p) => p.done).length }}/{{
-                    criterionProgress.length
-                  }}
-                  complete
-                </UBadge>
-              </div>
-              <UButton
-                :icon="
-                  isProgressOpen
-                    ? 'i-lucide-chevron-up'
-                    : 'i-lucide-chevron-down'
-                "
-                size="xs"
-                variant="ghost"
-                @click="isProgressOpen = !isProgressOpen"
-              >
-                {{ isProgressOpen ? "Hide" : "Show details" }}
-              </UButton>
-            </div>
-          </template>
-
-          <template #default>
-            <div v-if="isProgressOpen" class="space-y-3">
-              <div class="grid gap-2">
-                <button
-                  v-for="p in criterionProgress"
-                  :key="p.id"
-                  class="w-full text-left rounded-md border border-gray-100 px-3 py-1.5 text-xs dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-                  type="button"
-                  @click="setCriterion(p.id)"
-                >
-                  <span class="flex items-center justify-between gap-2">
-                    <span class="flex items-center gap-2 truncate">
-                      <span
-                        :class="p.done ? 'bg-success-500' : 'bg-warning-500'"
-                        class="w-2 h-2 rounded-full"
-                      />
-                      <span class="font-medium truncate">{{ p.label }}</span>
-                    </span>
-
-                    <span class="opacity-70 tabular-nums shrink-0">
-                      {{ p.stored }}/{{ p.total }}
-                    </span>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </template>
-        </UCard>
-
-        <UCard>
-          <div class="flex items-center justify-between gap-3">
-            <div class="text-sm opacity-80">
-              Progress:
-              <span class="font-semibold">{{ currentIndex + 1 }}</span> /
-              <span class="font-semibold">{{ session.criteria.length }}</span>
-            </div>
-
-            <div class="flex gap-2">
-              <UButton
-                :disabled="!hasPrev"
-                variant="soft"
-                @click="goPrevCriterion"
-              >
-                Prev
-              </UButton>
-              <UButton :disabled="!hasNext" @click="goNextCriterion">
-                Next
-              </UButton>
-            </div>
-          </div>
-        </UCard>
       </template>
 
       <template #fallback>
@@ -539,15 +485,698 @@
         </div>
       </template>
     </ClientOnly>
+    <div v-if="isHydrated">
+      <!-- Sync Data Modal -->
+      <AppModal
+        v-model:open="showSyncModal"
+        :title="`Fetching Data: ${activeCriterion?.label}`"
+        description="Scraping and processing data for automated scoring"
+      >
+        <div class="p-6 space-y-6">
+          <!-- Step 1: Loading -->
+          <div
+            v-if="syncStatus === 'loading'"
+            class="flex flex-col items-center justify-center py-12 space-y-4"
+          >
+            <UIcon
+              class="w-12 h-12 text-primary-500 animate-spin"
+              name="i-lucide-refresh-cw"
+            />
+            <div class="text-center">
+              <div class="font-bold text-lg">Fetching live data...</div>
+              <div class="text-sm text-gray-500">
+                Connecting to {{ activeCriterion?.sourceKey }}
+              </div>
+            </div>
+            <div
+              class="w-full max-w-xs bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden"
+            >
+              <div
+                class="bg-primary-500 h-full animate-[progress_2s_ease-in-out_infinite]"
+                style="width: 30%"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Step 2: Questionnaire -->
+          <div v-else-if="syncStatus === 'questioning'" class="space-y-6">
+            <div class="space-y-4">
+              <h3 class="font-bold text-gray-900 dark:text-white">
+                {{ questionnaireTitle }}
+              </h3>
+
+              <div
+                v-if="activeCriterion?.sourceKey === 'restcountries:languages'"
+                class="space-y-4"
+              >
+                <div
+                  v-for="d in syncData"
+                  :key="d.countryCode"
+                  class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl space-y-3"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm">{{ d.countryName }}</span>
+                    <div class="flex gap-1">
+                      <UBadge
+                        v-for="(lang, code) in d.rawValue"
+                        :key="code"
+                        size="xs"
+                        variant="soft"
+                        >{{ lang }}</UBadge
+                      >
+                    </div>
+                  </div>
+                  <UFormField label="Your proficiency in these languages:">
+                    <USelectMenu
+                      v-model="d.userResponse"
+                      :items="[
+                        { label: 'Fluent / Native', value: 10 },
+                        { label: 'Conversational', value: 7 },
+                        { label: 'Basic / Learning', value: 4 },
+                        { label: 'None', value: 1 },
+                      ]"
+                      class="w-full"
+                    />
+                  </UFormField>
+                </div>
+              </div>
+
+              <div
+                v-if="activeCriterion?.sourceKey === 'restcountries:timezones'"
+                class="space-y-4"
+              >
+                <div
+                  class="p-4 bg-primary-50 dark:bg-primary-950/20 rounded-xl mb-4"
+                >
+                  <UFormField label="Your base timezone:">
+                    <USelectMenu
+                      v-model="userBaseTimezone"
+                      :items="timezoneOptions"
+                      class="w-full"
+                      placeholder="Select your timezone..."
+                      searchable
+                    />
+                  </UFormField>
+                </div>
+                <div
+                  v-for="d in syncData"
+                  :key="d.countryCode"
+                  class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+                >
+                  <span class="text-sm font-medium">{{ d.countryName }}</span>
+                  <div class="flex gap-1 overflow-x-auto max-w-[200px]">
+                    <UBadge
+                      v-for="tz in d.rawValue"
+                      :key="tz"
+                      size="xs"
+                      variant="outline"
+                      >{{ tz }}</UBadge
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-if="activeCriterion?.sourceKey === 'restcountries:car_side'"
+                class="space-y-4"
+              >
+                <div
+                  v-for="d in syncData"
+                  :key="d.countryCode"
+                  class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl flex items-center justify-between"
+                >
+                  <div class="space-y-1">
+                    <div class="font-bold text-sm">{{ d.countryName }}</div>
+                    <div class="text-xs text-gray-500 uppercase">
+                      Drives on the
+                      <span class="font-black text-primary-500">{{
+                        d.rawValue
+                      }}</span>
+                    </div>
+                  </div>
+                  <UFormField label="Bothered?">
+                    <USelectMenu
+                      v-model="d.userResponse"
+                      :items="[
+                        { label: 'Not at all', value: 10 },
+                        { label: 'Slightly', value: 7 },
+                        { label: 'Moderately', value: 4 },
+                        { label: 'A lot / Dealbreaker', value: 1 },
+                      ]"
+                      class="w-40"
+                    />
+                  </UFormField>
+                </div>
+              </div>
+
+              <div
+                v-if="activeCriterion?.sourceKey === 'restcountries:climate'"
+                class="space-y-4"
+              >
+                <div
+                  class="p-4 bg-primary-50 dark:bg-primary-950/20 rounded-xl mb-4"
+                >
+                  <UFormField label="What is your ideal climate?">
+                    <USelectMenu
+                      v-model="userIdealClimate"
+                      :items="[
+                        { label: 'Tropical / Hot (Equator)', value: 0 },
+                        { label: 'Subtropical / Warm', value: 25 },
+                        { label: 'Temperate / Mild', value: 45 },
+                        { label: 'Cool / Seasonal', value: 60 },
+                        { label: 'Cold / Arctic', value: 80 },
+                      ]"
+                      class="w-full"
+                    />
+                  </UFormField>
+                </div>
+                <div
+                  v-for="d in syncData"
+                  :key="d.countryCode"
+                  class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+                >
+                  <span class="text-sm font-medium">{{ d.countryName }}</span>
+                  <div class="text-[10px] text-gray-500">
+                    Lat: {{ d.rawValue[0]?.toFixed(2) }}°
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <UButton block color="primary" @click="processQuestionnaire">
+              Calculate Scores
+            </UButton>
+          </div>
+
+          <!-- Step 3: Explaining & Confirming -->
+          <div v-else-if="syncStatus === 'explaining'" class="space-y-6">
+            <div
+              class="bg-primary-50 dark:bg-primary-950/30 p-4 rounded-xl border border-primary-100 dark:border-primary-900 flex flex-col gap-3"
+            >
+              <div class="flex gap-3">
+                <UIcon
+                  class="w-5 h-5 text-primary-500 shrink-0 mt-0.5"
+                  name="i-lucide-info"
+                />
+                <div
+                  class="text-xs leading-relaxed text-primary-900 dark:text-primary-100 font-medium"
+                >
+                  {{ getInterpretation }}
+                </div>
+              </div>
+              <div
+                class="text-[11px] text-primary-700/70 dark:text-primary-300/70 ml-8 leading-tight"
+              >
+                Data translates to a
+                <span class="font-bold text-primary-600 dark:text-primary-400"
+                  >1-10 score</span
+                >
+                based on your preference ({{
+                  activeCriterion?.direction === "higher-is-better"
+                    ? "Higher is better"
+                    : "Lower is better"
+                }})
+                <template
+                  v-if="
+                    DATA_SOURCES.find(
+                      (s) => s.value === activeCriterion?.sourceKey,
+                    )?.min !== undefined
+                  "
+                >
+                  compared to global min/max benchmarks.
+                </template>
+                <template v-else>
+                  relative to the countries in this session.
+                </template>
+              </div>
+            </div>
+
+            <div
+              class="max-h-[300px] overflow-y-auto border border-gray-100 dark:border-gray-800 rounded-lg"
+            >
+              <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 bg-white dark:bg-gray-900 shadow-sm">
+                  <tr
+                    class="text-[10px] font-bold uppercase text-gray-400 tracking-widest border-b border-gray-100 dark:border-gray-800"
+                  >
+                    <th class="p-3">Country</th>
+                    <th class="p-3">Raw Value</th>
+                    <th class="p-3 text-right">Calculated Score</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                  <tr
+                    v-for="d in syncData"
+                    :key="d.countryCode"
+                    class="text-sm"
+                  >
+                    <td class="p-3 font-medium">{{ d.countryName }}</td>
+                    <td class="p-3 text-gray-500 tabular-nums">
+                      {{
+                        formatRawValue(d.rawValue, activeCriterion?.sourceKey)
+                      }}
+                    </td>
+                    <td class="p-3 text-right">
+                      <UBadge
+                        :color="
+                          d.calculatedScore >= 7
+                            ? 'success'
+                            : d.calculatedScore >= 4
+                              ? 'primary'
+                              : 'warning'
+                        "
+                        class="font-mono"
+                        size="xs"
+                        variant="soft"
+                      >
+                        {{ d.calculatedScore }}/10
+                      </UBadge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="flex flex-col gap-3">
+              <div class="text-sm font-semibold">
+                What would you like to do?
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <UButton
+                  block
+                  color="primary"
+                  icon="i-lucide-check-circle"
+                  @click="applySyncedData"
+                >
+                  Use these scores
+                </UButton>
+                <UButton
+                  block
+                  color="neutral"
+                  icon="i-lucide-user"
+                  variant="soft"
+                  @click="switchCriterionMode('manual')"
+                >
+                  Switch to Manual Mode
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-between items-center w-full">
+            <UButton
+              color="neutral"
+              size="sm"
+              variant="ghost"
+              @click="showSyncModal = false"
+            >
+              Cancel
+            </UButton>
+            <div
+              v-if="syncStatus === 'explaining'"
+              class="text-[10px] text-gray-400"
+            >
+              Scored via
+              {{
+                DATA_SOURCES.find((s) => s.value === activeCriterion?.sourceKey)
+                  ?.label
+              }}
+            </div>
+          </div>
+        </template>
+      </AppModal>
+    </div>
   </div>
 </template>
 
+<style scoped>
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+</style>
+
 <script lang="ts" setup>
 import { COUNTRIES } from "~/data/countries";
+import { DATA_SOURCES } from "~/data/sources";
 
 const store = useSessionsStore();
 const router = useRouter();
 const route = useRoute();
+const toast = useToast();
+const isHydrated = ref(false);
+
+onMounted(() => {
+  isHydrated.value = true;
+});
+
+const isSyncing = ref(false);
+const showSyncModal = ref(false);
+const syncStatus = ref<"loading" | "questioning" | "explaining" | "confirming">(
+  "loading",
+);
+const syncData = ref<any[]>([]);
+
+const userBaseTimezone = ref({ label: "UTC+00:00", value: 0 });
+const userIdealClimate = ref({ label: "Temperate / Mild", value: 45 });
+const timezoneOptions = [
+  { label: "Samoa / Midway (UTC-11:00)", value: -11 },
+  { label: "Hawaii / Honolulu (UTC-10:00)", value: -10 },
+  { label: "Alaska (UTC-09:00)", value: -9 },
+  { label: "Pacific Time (US/Canada) (UTC-08:00)", value: -8 },
+  { label: "Mountain Time (US/Canada) (UTC-07:00)", value: -7 },
+  { label: "Central Time (US/Canada) / Mexico City (UTC-06:00)", value: -6 },
+  { label: "Eastern Time (US/Canada) / Bogota (UTC-05:00)", value: -5 },
+  { label: "Atlantic Time / Santiago (UTC-04:00)", value: -4 },
+  { label: "Newfoundland (UTC-03:30)", value: -3.5 },
+  { label: "Brasilia / Buenos Aires (UTC-03:00)", value: -3 },
+  { label: "Mid-Atlantic (UTC-02:00)", value: -2 },
+  { label: "Azores / Cape Verde (UTC-01:00)", value: -1 },
+  { label: "London / Lisbon / Casablanca (UTC+00:00)", value: 0 },
+  { label: "Berlin / Paris / Rome / Madrid (UTC+01:00)", value: 1 },
+  { label: "Athens / Cairo / Johannesburg (UTC+02:00)", value: 2 },
+  { label: "Moscow / Istanbul / Nairobi / Riyadh (UTC+03:00)", value: 3 },
+  { label: "Tehran (UTC+03:30)", value: 3.5 },
+  { label: "Dubai / Baku / Tbilisi / Muscat (UTC+04:00)", value: 4 },
+  { label: "Kabul (UTC+04:30)", value: 4.5 },
+  { label: "Karachi / Tashkent / Islamabad (UTC+05:00)", value: 5 },
+  { label: "Mumbai / New Delhi / Colombo (UTC+05:30)", value: 5.5 },
+  { label: "Kathmandu (UTC+05:45)", value: 5.75 },
+  { label: "Almaty / Dhaka / Astana (UTC+06:00)", value: 6 },
+  { label: "Yangon (Rangoon) (UTC+06:30)", value: 6.5 },
+  { label: "Bangkok / Jakarta / Hanoi (UTC+07:00)", value: 7 },
+  { label: "Beijing / Singapore / Perth / Hong Kong (UTC+08:00)", value: 8 },
+  { label: "Pyongyang (UTC+08:30)", value: 8.5 },
+  { label: "Tokyo / Seoul / Yakutsk (UTC+09:00)", value: 9 },
+  { label: "Adelaide / Darwin (UTC+09:30)", value: 9.5 },
+  { label: "Sydney / Melbourne / Brisbane / Guam (UTC+10:00)", value: 10 },
+  { label: "Lord Howe Island (UTC+10:30)", value: 10.5 },
+  { label: "Magadan / Solomon Is. (UTC+11:00)", value: 11 },
+  { label: "Norfolk Island (UTC+11:30)", value: 11.5 },
+  { label: "Auckland / Wellington / Fiji (UTC+12:00)", value: 12 },
+  { label: "Chatham Islands (UTC+12:45)", value: 12.75 },
+  { label: "Nuku'alofa / Phoenix Is. (UTC+13:00)", value: 13 },
+  { label: "Line Islands (Kiritimati) (UTC+14:00)", value: 14 },
+];
+
+const formatRawValue = (value: any, sourceKey?: string) => {
+  if (value === null || value === undefined) return "—";
+
+  if (sourceKey === "restcountries:languages") {
+    if (typeof value === "object") {
+      return Object.values(value).join(", ");
+    }
+  }
+
+  if (sourceKey === "restcountries:timezones") {
+    if (Array.isArray(value)) {
+      return value.join(", ");
+    }
+  }
+
+  if (sourceKey === "restcountries:climate") {
+    if (Array.isArray(value) && value.length >= 2) {
+      return `${value[0].toFixed(2)}°, ${value[1].toFixed(2)}°`;
+    }
+  }
+
+  if (typeof value === "number") {
+    return value.toLocaleString();
+  }
+
+  return value;
+};
+
+const questionnaireTitle = computed(() => {
+  if (activeCriterion.value?.sourceKey === "restcountries:languages") {
+    return "Tell us about your language skills";
+  }
+  if (activeCriterion.value?.sourceKey === "restcountries:timezones") {
+    return "What is your base timezone?";
+  }
+  if (activeCriterion.value?.sourceKey === "restcountries:car_side") {
+    return "How do you feel about driving on the other side?";
+  }
+  if (activeCriterion.value?.sourceKey === "restcountries:climate") {
+    return "Define your climate preference";
+  }
+  return "Quick Questions";
+});
+
+const getInterpretation = computed(() => {
+  if (!activeCriterion.value) return "";
+
+  const sourceKey = activeCriterion.value.sourceKey;
+  const sourceDef = DATA_SOURCES.find((s) => s.value === sourceKey);
+  const isGlobal = sourceDef?.min !== undefined && sourceDef?.max !== undefined;
+  const modeText = isGlobal ? "global benchmarks" : "relative comparison";
+
+  if (sourceKey === "restcountries:languages") {
+    return "These scores were calculated based on your personal proficiency levels for each country's official languages.";
+  }
+  if (sourceKey === "restcountries:timezones") {
+    return "Scores represent how well these countries' time zones align with your base time. Smaller differences result in higher scores.";
+  }
+  if (sourceKey === "restcountries:car_side") {
+    return "These scores reflect your comfort level with the driving side used in each country.";
+  }
+  if (sourceKey === "restcountries:climate") {
+    return "Calculated based on the absolute distance from your ideal climate zone (estimated by latitude).";
+  }
+  if (sourceKey === "restcountries:population") {
+    return "Scores are based on the country's total population. Higher population can indicate larger markets and more urban activity, while lower might mean more space and tranquility.";
+  }
+  if (sourceKey === "worldbank:gdp") {
+    return `Higher GDP per capita usually correlates with better infrastructure and higher purchasing power. Scores are normalized against ${modeText}.`;
+  }
+  if (sourceKey === "worldbank:life_expectancy") {
+    return `Life expectancy is a strong indicator of overall healthcare quality and living standards. Scores are normalized against ${modeText}.`;
+  }
+  if (sourceKey === "numbeo:cost_of_living") {
+    return `Based on Numbeo's Cost of Living Index. Higher index means more expensive daily life. Scores are normalized against ${modeText}.`;
+  }
+  if (sourceKey === "numbeo:crime_index") {
+    return `Lower crime index indicates a safer environment. Scores are calculated against ${modeText} so that countries with lower indices receive higher safety scores (based on your "${activeCriterion.value.direction}" setting).`;
+  }
+  if (
+    sourceKey === "worldbank:gdp" &&
+    activeCriterion.value.label.toLowerCase().includes("job")
+  ) {
+    return `Using GDP per capita as a proxy for economic strength and potential job market quality. Higher values typically mean more robust economies.`;
+  }
+  if (
+    sourceKey === "worldbank:life_expectancy" &&
+    activeCriterion.value.label.toLowerCase().includes("health")
+  ) {
+    return `Using Life Expectancy as a proxy for the overall quality and accessibility of the healthcare system.`;
+  }
+  if (sourceKey === "wikipedia:literacy_rate") {
+    return `A high literacy rate is an indicator of the country's investment in education and human development. Scores are normalized against ${modeText}.`;
+  }
+
+  return `The scores were normalized based on a ${modeText} of your selection of countries.`;
+});
+
+const syncCurrentCriterion = async () => {
+  if (!activeCriterion.value || !session.value) return;
+  if (activeCriterion.value.mode !== "auto" || !activeCriterion.value.sourceKey)
+    return;
+
+  isSyncing.value = true;
+  showSyncModal.value = true;
+  syncStatus.value = "loading";
+  syncData.value = [];
+
+  try {
+    const response = await $fetch<any>("/api/data-fetch", {
+      method: "POST",
+      body: {
+        countries: session.value.countryCodes,
+        sourceKey: activeCriterion.value.sourceKey,
+      },
+    });
+
+    if (response.success && response.data) {
+      const isInteractive = [
+        "restcountries:languages",
+        "restcountries:timezones",
+        "restcountries:car_side",
+        "restcountries:climate",
+      ].includes(activeCriterion.value.sourceKey);
+
+      syncData.value = response.data.map((d: any) => ({
+        ...d,
+        userResponse: null,
+        countryName: codeToName.value.get(d.countryCode) || d.countryCode,
+      }));
+
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      if (isInteractive) {
+        syncStatus.value = "questioning";
+      } else {
+        // 1. Map raw values to scores
+        const sourceDef = DATA_SOURCES.find(
+          (s) => s.value === activeCriterion.value?.sourceKey,
+        );
+
+        const rawValues = response.data.map((d: any) => d.rawValue);
+        const min = sourceDef?.min ?? Math.min(...rawValues);
+        const max = sourceDef?.max ?? Math.max(...rawValues);
+
+        syncData.value = syncData.value.map((d: any) => {
+          let score = 5;
+          if (max !== min) {
+            // Clamp rawValue to min/max to ensure normalization stays within [0, 1]
+            const clampedValue = Math.max(min, Math.min(max, d.rawValue));
+            const normalized = (clampedValue - min) / (max - min);
+
+            // normalization: higher rawValue = normalized closer to 1
+            if (activeCriterion.value?.direction === "higher-is-better") {
+              // Higher rawValue -> Higher score
+              score = 1 + normalized * 9;
+            } else {
+              // Lower rawValue -> Higher score
+              score = 10 - normalized * 9;
+            }
+          } else {
+            // All values are the same, give high score if it's the only value or just default to 10
+            score = 10;
+          }
+          return {
+            ...d,
+            calculatedScore: Math.round(score),
+          };
+        });
+        syncStatus.value = "explaining";
+      }
+    }
+  } catch (err: any) {
+    console.error("Sync failed", err);
+    toast.add({
+      title: "Sync failed",
+      description:
+        err.data?.message ||
+        "Could not fetch data from the source. Please try again.",
+      color: "error",
+    });
+    showSyncModal.value = false;
+  } finally {
+    isSyncing.value = false;
+  }
+};
+
+const viewStoredData = () => {
+  if (!activeCriterion.value || !session.value) return;
+
+  // Prepare syncData from stored scores
+  syncData.value = session.value.countryCodes.map((code) => {
+    const scoreObj = session.value?.scores.find(
+      (s) =>
+        s.countryCode === code && s.criterionId === activeCriterion.value?.id,
+    );
+
+    return {
+      countryCode: code,
+      countryName: codeToName.value.get(code) || code,
+      rawValue: scoreObj?.rawValue,
+      calculatedScore: scoreObj?.score || 5,
+    };
+  });
+
+  syncStatus.value = "explaining";
+  showSyncModal.value = true;
+};
+
+const processQuestionnaire = () => {
+  if (!activeCriterion.value) return;
+
+  syncData.value = syncData.value.map((d) => {
+    let score = 5;
+
+    if (activeCriterion.value?.sourceKey === "restcountries:languages") {
+      score = d.userResponse?.value || 1;
+    } else if (activeCriterion.value?.sourceKey === "restcountries:timezones") {
+      // Calculate best fit from list of timezones
+      // d.rawValue is array like ["UTC-06:00"]
+      const offsets = d.rawValue.map((tz: string) => {
+        const match = tz.match(/UTC([+-]\d+):(\d+)/);
+        if (!match || match[1] === undefined || match[2] === undefined)
+          return 0;
+        const h = parseInt(match[1]);
+        const m = parseInt(match[2]);
+        return h + (h >= 0 ? m / 60 : -m / 60);
+      });
+
+      const userOffset = userBaseTimezone.value.value;
+      const minDiff = Math.min(
+        ...offsets.map((o: number) => Math.abs(o - userOffset)),
+      );
+
+      // Score: 10 if 0 diff, 1 if 12h diff
+      score = Math.max(1, 10 - (minDiff / 12) * 9);
+    } else if (activeCriterion.value?.sourceKey === "restcountries:car_side") {
+      score = d.userResponse?.value || 10;
+    } else if (activeCriterion.value?.sourceKey === "restcountries:climate") {
+      // Calculate climate fit based on latitude
+      // d.rawValue is [lat, lng]
+      const lat = Math.abs(d.rawValue[0] || 0);
+      const idealLat = userIdealClimate.value.value;
+      const diff = Math.abs(lat - idealLat);
+      // Score: 10 if match, 1 if 60+ degrees away
+      score = Math.max(1, 10 - (diff / 60) * 9);
+    }
+
+    return {
+      ...d,
+      calculatedScore: Math.round(score),
+    };
+  });
+
+  syncStatus.value = "explaining";
+};
+
+const applySyncedData = () => {
+  if (!activeCriterion.value) return;
+
+  syncData.value.forEach((d) => {
+    store.setScore(
+      d.countryCode,
+      activeCriterion.value!.id,
+      d.calculatedScore,
+      d.rawValue,
+    );
+  });
+
+  // Update lastFetched in active session
+  store.upsertCriterion({
+    ...activeCriterion.value,
+    lastFetched: new Date().toISOString(),
+  });
+
+  toast.add({
+    title: "Data applied successfully",
+    color: "success",
+  });
+  showSyncModal.value = false;
+};
+
+const switchCriterionMode = (mode: "manual" | "auto") => {
+  if (!activeCriterion.value) return;
+  store.upsertCriterion({
+    ...activeCriterion.value,
+    mode,
+  });
+  if (mode === "manual") {
+    showSyncModal.value = false;
+  }
+};
 
 const sessionId = computed(() => String(route.params.id ?? ""));
 
@@ -650,6 +1279,12 @@ const currentIndex = computed(() => {
 
 const totalCountries = computed(() => session.value?.countryCodes.length ?? 0);
 
+const scoredInCurrent = computed(() => {
+  const cc = currentCriterion.value;
+  if (!cc) return 0;
+  return storedCountForCriterion(cc.value);
+});
+
 const storedCountForCriterion = (criterionId: string) => {
   const s = session.value;
   if (!s) return 0;
@@ -704,51 +1339,6 @@ const firstIncompleteCriterionId = computed(() => {
 });
 
 const isProgressOpen = ref(false);
-
-const battleMode = ref(false);
-const battleCountries = ref<string[]>([]); // [codeA, codeB]
-
-const toggleBattleMode = () => {
-  battleMode.value = !battleMode.value;
-  if (
-    battleMode.value &&
-    session.value &&
-    session.value.countryCodes.length >= 2
-  ) {
-    battleCountries.value = [
-      session.value.countryCodes[0]!,
-      session.value.countryCodes[1]!,
-    ];
-  }
-};
-
-const recordBattleWin = (winnerCode: string) => {
-  const current = getScore(winnerCode);
-  if (current < 10) {
-    setScore(winnerCode, current + 1);
-  }
-};
-
-const recordBattleLoss = (code: string) => {
-  const current = getScore(code);
-  if (current > 1) {
-    setScore(code, current - 1);
-  }
-};
-
-const recordBattleTie = () => {
-  // No change? Or maybe set both to 5 if they were far apart?
-  // Usually tie means they are equal, so maybe average them?
-  const sA = getScore(battleCountries.value[0]!);
-  const sB = getScore(battleCountries.value[1]!);
-  const avg = Math.round((sA + sB) / 2);
-  setScore(battleCountries.value[0]!, avg);
-  setScore(battleCountries.value[1]!, avg);
-};
-
-const selectBattleCountry = (idx: number, code: string) => {
-  battleCountries.value[idx] = code;
-};
 
 const hasPrev = computed(() => currentIndex.value > 0);
 const hasNext = computed(() => {
@@ -821,8 +1411,23 @@ const fillThisCriterionWith5 = () => {
   const cc = currentCriterion.value;
   if (!s || !cc) return;
   for (const code of s.countryCodes) {
-    store.setScore(code, cc.value, 5);
+    // Preserve rawValue if it exists
+    const existing = s.scores.find(
+      (x: any) => x.countryCode === code && x.criterionId === cc.value,
+    );
+    store.setScore(code, cc.value, 5, existing?.rawValue);
   }
+};
+
+const resetToBaseline = (countryCode: string) => {
+  const s = session.value;
+  const cc = currentCriterion.value;
+  if (!s || !cc) return;
+
+  const existing = s.scores.find(
+    (x: any) => x.countryCode === countryCode && x.criterionId === cc.value,
+  );
+  store.setScore(countryCode, cc.value, 5, existing?.rawValue);
 };
 
 const getScoreFor = (countryCode: string, criterionId: string) => {

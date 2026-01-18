@@ -2,12 +2,16 @@
   <div class="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
     <SessionWizardHeader />
 
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex items-center justify-between gap-4 py-1">
       <div class="space-y-0.5">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        <h1
+          class="text-lg font-bold text-gray-900 dark:text-white leading-none"
+        >
           Define criteria
         </h1>
-        <p class="text-xs text-gray-500">Decide what matters and how much</p>
+        <p class="text-[10px] text-gray-500 font-medium">
+          Decide what matters and how much
+        </p>
       </div>
 
       <div class="flex gap-2">
@@ -54,15 +58,27 @@
                   </UTooltip>
                 </div>
 
-                <UButton
-                  v-if="(store.activeSession?.criteria.length ?? 0) > 0"
-                  icon="i-lucide-save"
-                  size="xs"
-                  variant="ghost"
-                  @click="isSavePresetModalOpen = true"
-                >
-                  Save as preset
-                </UButton>
+                <div class="flex items-center gap-2">
+                  <UButton
+                    v-if="(store.activeSession?.criteria.length ?? 0) > 0"
+                    color="error"
+                    icon="i-lucide-trash-2"
+                    size="xs"
+                    variant="ghost"
+                    @click="isClearCriteriaOpen = true"
+                  >
+                    Clear all
+                  </UButton>
+                  <UButton
+                    v-if="(store.activeSession?.criteria.length ?? 0) > 0"
+                    icon="i-lucide-save"
+                    size="xs"
+                    variant="ghost"
+                    @click="isSavePresetModalOpen = true"
+                  >
+                    Save as preset
+                  </UButton>
+                </div>
               </div>
 
               <div
@@ -70,18 +86,35 @@
                 :key="c.id"
                 class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 hover:border-primary-500/30 transition-all shadow-sm"
               >
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <div class="font-bold text-gray-900 dark:text-white">
-                      {{ c.label }}
+                <div
+                  class="flex-1 min-w-0 flex items-center justify-between gap-4"
+                >
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <div class="font-bold text-gray-900 dark:text-white">
+                        {{ c.label }}
+                      </div>
+                      <UBadge
+                        v-if="c.mode === 'auto'"
+                        color="secondary"
+                        size="xs"
+                        variant="soft"
+                      >
+                        Auto
+                      </UBadge>
+                    </div>
+                    <div
+                      v-if="c.description"
+                      class="text-xs text-gray-500 line-clamp-1"
+                    >
+                      {{ c.description }}
                     </div>
                   </div>
-                  <div
-                    v-if="c.description"
-                    class="text-xs text-gray-500 line-clamp-1"
-                  >
-                    {{ c.description }}
-                  </div>
+                  <UIcon
+                    v-if="c.sourceKey"
+                    class="w-5 h-5 text-blue-500 shrink-0"
+                    name="i-lucide-database"
+                  />
                 </div>
 
                 <div
@@ -214,9 +247,18 @@
                     >
                       <div>
                         <div
-                          class="font-bold text-[11px] group-hover:text-primary-600 transition-colors"
+                          class="font-bold text-[11px] group-hover:text-primary-600 transition-colors flex items-center gap-1.5"
                         >
                           {{ set.name }}
+                          <UIcon
+                            v-if="
+                              set.criteria.some(
+                                (c) => c.mode === 'auto' || c.sourceKey,
+                              )
+                            "
+                            class="w-3.5 h-3.5 text-blue-500"
+                            name="i-lucide-database"
+                          />
                         </div>
                         <div class="text-[9px] opacity-50 font-medium">
                           {{ set.criteria.length }} criteria
@@ -246,8 +288,19 @@
                         class="text-left flex items-center justify-between w-full"
                       >
                         <div>
-                          <div class="font-bold text-[11px]">
+                          <div
+                            class="font-bold text-[11px] flex items-center gap-1.5"
+                          >
                             {{ p.name }}
+                            <UIcon
+                              v-if="
+                                p.criteria.some(
+                                  (c) => c.mode === 'auto' || c.sourceKey,
+                                )
+                              "
+                              class="w-3.5 h-3.5 text-blue-500"
+                              name="i-lucide-database"
+                            />
                           </div>
                           <div class="text-[9px] opacity-50 font-medium">
                             {{ p.criteria.length }} criteria
@@ -314,6 +367,7 @@
                     >
                       Add all
                     </UButton>
+
                     <span class="text-gray-300">|</span>
                     <UButton
                       class="px-2 h-auto"
@@ -366,7 +420,14 @@
                           <div
                             class="font-medium text-[11px] flex items-center justify-between gap-1.5"
                           >
-                            <span class="truncate">{{ c.label }}</span>
+                            <div class="flex items-center gap-1.5 truncate">
+                              <span class="truncate">{{ c.label }}</span>
+                              <UIcon
+                                v-if="c.sourceKey"
+                                class="w-3.5 h-3.5 text-blue-500 shrink-0"
+                                name="i-lucide-database"
+                              />
+                            </div>
                             <UIcon
                               v-if="isPresetAdded(c.label)"
                               class="w-3.5 h-3.5 text-primary-500 shrink-0"
@@ -405,6 +466,16 @@
 
     <div v-if="isHydrated">
       <ConfirmModal
+        v-model:open="isClearCriteriaOpen"
+        confirm-color="error"
+        confirm-label="Clear All"
+        description="This will remove ALL criteria from your session and clear all associated scores."
+        message="Are you sure you want to clear all criteria?"
+        title="Clear All Criteria?"
+        @confirm="confirmClearCriteria"
+      />
+
+      <ConfirmModal
         v-model:open="isConfirmModalOpen"
         confirm-color="error"
         confirm-label="Replace Criteria"
@@ -429,6 +500,7 @@
             </div>
             <UInput
               v-model="newPresetName"
+              class="w-full"
               placeholder="e.g. My Digital Nomad Mix"
               size="sm"
               @keydown.enter="confirmSavePreset"
@@ -493,7 +565,20 @@ const libraryCriteriaByCategory = (cat: string) => {
 };
 
 const isSavePresetModalOpen = ref(false);
+const isClearCriteriaOpen = ref(false);
 const newPresetName = ref("");
+
+const confirmClearCriteria = () => {
+  if (store.activeSession) {
+    store.activeSession.criteria = [];
+    store.activeSession.scores = [];
+    toast.add({
+      title: "Criteria cleared",
+      color: "neutral",
+    });
+  }
+  isClearCriteriaOpen.value = false;
+};
 
 const confirmSavePreset = () => {
   if (!newPresetName.value.trim()) return;
@@ -529,10 +614,22 @@ const confirmApplyPreset = () => {
   const set = pendingPresetSet.value;
 
   if (store.activeSession) {
-    store.activeSession.criteria = set.criteria.map((c: PresetCriterion) => ({
-      ...c,
-      id: crypto.randomUUID(),
-    }));
+    store.activeSession.criteria = set.criteria.map((c: PresetCriterion) => {
+      // Find matching master criterion to restore mode/sourceKey if missing in preset
+      const master = store.masterCriteria.find(
+        (m) => m.label.toLowerCase() === c.label.toLowerCase(),
+      );
+
+      return {
+        ...c,
+        id: crypto.randomUUID(),
+        mode:
+          c.mode ||
+          master?.mode ||
+          (c.sourceKey || master?.sourceKey ? "auto" : "manual"),
+        sourceKey: c.sourceKey || master?.sourceKey,
+      };
+    });
 
     store.activeSession.scores = [];
   }
@@ -578,6 +675,8 @@ const addCriterionFromLibrary = (c: any) => {
     weight: c.weight,
     direction: c.direction,
     category: c.category,
+    mode: c.mode,
+    sourceKey: c.sourceKey,
   });
 };
 

@@ -1,9 +1,9 @@
 <template>
-  <div class="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
+  <div class="space-y-6 max-w-6xl mx-auto">
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
     >
-      <div>
+      <div class="flex-1">
         <h1
           class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
         >
@@ -14,33 +14,42 @@
           Manage global criteria and categories for all your sessions
         </p>
       </div>
-      <div class="flex gap-2">
-        <UButton icon="i-lucide-plus" size="sm" @click="openAddCriterion">
-          Add Criterion
-        </UButton>
-        <UButton
-          icon="i-lucide-folder-plus"
+
+      <div
+        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2"
+      >
+        <UInput
+          v-model="searchQuery"
+          class="sm:w-64"
+          icon="i-lucide-search"
+          placeholder="Search criteria..."
           size="sm"
-          variant="soft"
-          @click="isAddCategoryModalOpen = true"
-        >
-          Add Category
-        </UButton>
+        />
+        <div class="flex gap-2">
+          <UButton icon="i-lucide-plus" size="sm" @click="openAddCriterion">
+            Add Criterion
+          </UButton>
+          <UButton
+            icon="i-lucide-folder-plus"
+            size="sm"
+            variant="soft"
+            @click="isAddCategoryModalOpen = true"
+          >
+            Add Category
+          </UButton>
+        </div>
       </div>
     </div>
 
     <ClientOnly>
       <div class="space-y-10">
         <!-- Categories and Criteria -->
-        <div
-          v-for="cat in allCategories"
-          :key="cat"
-          class="space-y-4"
-          @drop="onDropCriterion(cat)"
-          @dragover.prevent
-        >
+        <div v-for="cat in allCategories" :key="cat" class="space-y-4">
           <div
+            v-if="criteriaByCategory[cat]?.length"
             class="flex items-center justify-between border-b-2 border-gray-100 dark:border-gray-800 pb-2"
+            @drop="onDropCriterion(cat)"
+            @dragover.prevent
           >
             <div class="flex items-center gap-2">
               <h2
@@ -71,7 +80,10 @@
           </div>
 
           <div
+            v-if="criteriaByCategory[cat]?.length"
             class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm"
+            @drop="onDropCriterion(cat)"
+            @dragover.prevent
           >
             <UTable
               :columns="columns"
@@ -80,22 +92,61 @@
             >
               <template #label-cell="{ row }">
                 <div
-                  class="font-bold text-gray-900 dark:text-white flex items-center gap-2 cursor-move group/row"
+                  class="font-bold text-gray-900 dark:text-white flex items-center justify-between gap-2 cursor-move group/row w-full"
                   draggable="true"
-                  @dragstart="onDragStart(row.original as Criterion)"
+                  @dragstart="onDragStart($event, row.original as Criterion)"
                 >
+                  <div class="flex items-center gap-2">
+                    <UIcon
+                      class="w-4 h-4 text-gray-300 group-hover/row:text-gray-500"
+                      name="i-lucide-grip-vertical"
+                    />
+                    {{ (row.original as Criterion).label }}
+                  </div>
                   <UIcon
-                    class="w-4 h-4 text-gray-300 group-hover/row:text-gray-500"
-                    name="i-lucide-grip-vertical"
+                    v-if="(row.original as Criterion).sourceKey"
+                    class="w-5 h-5 text-blue-500"
+                    name="i-lucide-database"
                   />
-                  {{ (row.original as Criterion).label }}
                 </div>
               </template>
 
               <template #description-cell="{ row }">
-                <span class="text-xs text-gray-500 line-clamp-1 max-w-xs">{{
-                  (row.original as Criterion).description || "—"
-                }}</span>
+                <div class="flex flex-col gap-0.5 max-w-xs">
+                  <span class="text-xs text-gray-500 line-clamp-1">{{
+                    (row.original as Criterion).description || "—"
+                  }}</span>
+                  <span
+                    v-if="(row.original as Criterion).mode === 'auto'"
+                    class="text-[10px] text-blue-500 font-medium flex items-center gap-1"
+                  >
+                    <UIcon class="w-3 h-3" name="i-lucide-database" />
+                    {{
+                      DATA_SOURCES.find(
+                        (s) =>
+                          s.value === (row.original as Criterion).sourceKey,
+                      )?.label || (row.original as Criterion).sourceKey
+                    }}
+                  </span>
+                </div>
+              </template>
+
+              <template #mode-cell="{ row }">
+                <UBadge
+                  :color="
+                    (row.original as Criterion).mode === 'auto'
+                      ? 'secondary'
+                      : 'neutral'
+                  "
+                  size="xs"
+                  variant="soft"
+                >
+                  {{
+                    (row.original as Criterion).mode === "auto"
+                      ? "Auto"
+                      : "Manual"
+                  }}
+                </UBadge>
               </template>
 
               <template #weight-cell="{ row }">
@@ -178,6 +229,22 @@
         description="Provide a label and description for the criterion"
       >
         <div class="p-4 space-y-4">
+          <UFormField label="Category">
+            <USelectMenu
+              :items="categoryOptions"
+              :model-value="
+                categoryOptions.find((o) => o.value === criterionDraft.category)
+              "
+              class="w-1/2"
+              placeholder="Select category..."
+              @update:model-value="
+                (v: any) => {
+                  criterionDraft.category = v?.value;
+                }
+              "
+            />
+          </UFormField>
+
           <UFormField label="Label">
             <UInput
               v-model="criterionDraft.label"
@@ -193,6 +260,57 @@
               placeholder="Optional details..."
             />
           </UFormField>
+
+          <div class="grid grid-cols-2 gap-4">
+            <UFormField label="Mode">
+              <USelectMenu
+                :items="[
+                  { label: 'Manual Scoring', value: 'manual' },
+                  {
+                    label: 'Auto-Data Mode',
+                    value: 'auto',
+                    disabled: !criterionDraft.sourceKey,
+                  },
+                ]"
+                :model-value="
+                  [
+                    { label: 'Manual Scoring', value: 'manual' },
+                    { label: 'Auto-Data Mode', value: 'auto' },
+                  ].find((i) => i.value === criterionDraft.mode)
+                "
+                class="w-full"
+                @update:model-value="
+                  (v: any) => {
+                    criterionDraft.mode = v?.value;
+                  }
+                "
+              />
+            </UFormField>
+
+            <UFormField label="Data Source">
+              <USelectMenu
+                :items="[
+                  { label: 'None (Manual only)', value: undefined },
+                  ...DATA_SOURCES,
+                ]"
+                :model-value="
+                  [
+                    { label: 'None (Manual only)', value: undefined },
+                    ...DATA_SOURCES,
+                  ].find((s) => s.value === criterionDraft.sourceKey)
+                "
+                class="w-full"
+                placeholder="Select source..."
+                value-attribute="value"
+                @update:model-value="
+                  (v: any) => {
+                    criterionDraft.sourceKey = v?.value;
+                    if (!v?.value) criterionDraft.mode = 'manual';
+                  }
+                "
+              />
+            </UFormField>
+          </div>
 
           <div class="grid grid-cols-2 gap-4">
             <UFormField>
@@ -233,22 +351,6 @@
               />
             </UFormField>
           </div>
-
-          <UFormField label="Category">
-            <USelectMenu
-              :items="categoryOptions"
-              :model-value="
-                categoryOptions.find((o) => o.value === criterionDraft.category)
-              "
-              class="w-1/2"
-              placeholder="Select category..."
-              @update:model-value="
-                (v: any) => {
-                  criterionDraft.category = v?.value;
-                }
-              "
-            />
-          </UFormField>
         </div>
 
         <template #footer>
@@ -345,9 +447,12 @@
 import type { Criterion } from "~/types/countryRoyale";
 import type { TableColumn } from "@nuxt/ui";
 
+import { DATA_SOURCES } from "~/data/sources";
+
 const store = useSessionsStore();
 const toast = useToast();
 const isHydrated = ref(false);
+const searchQuery = ref("");
 
 onMounted(() => {
   isHydrated.value = true;
@@ -356,6 +461,7 @@ onMounted(() => {
 const columns: TableColumn<Criterion>[] = [
   { id: "label", header: "Criterion" },
   { id: "description", header: "Description" },
+  { id: "mode", header: "Mode" },
   { id: "weight", header: "Weight" },
   { id: "direction", header: "Direction" },
   { id: "actions" },
@@ -365,9 +471,20 @@ const allCategories = computed(() => {
   return [...store.masterCategories, ""];
 });
 
+const filteredCriteria = computed(() => {
+  if (!searchQuery.value.trim()) return store.masterCriteria;
+  const q = searchQuery.value.toLowerCase();
+  return store.masterCriteria.filter(
+    (c) =>
+      c.label.toLowerCase().includes(q) ||
+      c.description?.toLowerCase().includes(q) ||
+      c.category?.toLowerCase().includes(q),
+  );
+});
+
 const criteriaByCategory = computed(() => {
   const map: Record<string, Criterion[]> = {};
-  store.masterCriteria.forEach((c) => {
+  filteredCriteria.value.forEach((c) => {
     const cat = c.category || "";
     if (!map[cat]) map[cat] = [];
     map[cat].push(c);
@@ -388,6 +505,8 @@ const criterionDraft = reactive({
   weight: 5,
   direction: "higher-is-better" as "higher-is-better" | "lower-is-better",
   category: undefined as string | undefined,
+  mode: "manual" as "manual" | "auto",
+  sourceKey: undefined as string | undefined,
 });
 
 const openAddCriterion = () => {
@@ -397,6 +516,8 @@ const openAddCriterion = () => {
   criterionDraft.weight = 5;
   criterionDraft.direction = "higher-is-better";
   criterionDraft.category = undefined;
+  criterionDraft.mode = "manual";
+  criterionDraft.sourceKey = undefined;
   isCriterionModalOpen.value = true;
 };
 
@@ -407,6 +528,8 @@ const openEditCriterion = (c: Criterion) => {
   criterionDraft.weight = c.weight;
   criterionDraft.direction = c.direction;
   criterionDraft.category = c.category;
+  criterionDraft.mode = c.mode || "manual";
+  criterionDraft.sourceKey = c.sourceKey;
   isCriterionModalOpen.value = true;
 };
 
@@ -418,6 +541,8 @@ const saveCriterion = () => {
     weight: criterionDraft.weight,
     direction: criterionDraft.direction,
     category: criterionDraft.category,
+    mode: criterionDraft.mode,
+    sourceKey: criterionDraft.sourceKey,
   });
   isCriterionModalOpen.value = false;
   toast.add({
@@ -488,8 +613,12 @@ const confirmDeleteCategory = (cat: string) => {
 // Drag and Drop
 const draggedCriterion = ref<Criterion | null>(null);
 
-const onDragStart = (c: Criterion) => {
+const onDragStart = (e: DragEvent, c: Criterion) => {
   draggedCriterion.value = c;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", c.id);
+  }
 };
 
 const onDropCriterion = (targetCategory: string) => {

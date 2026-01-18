@@ -1,26 +1,32 @@
 <template>
-  <div class="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
-    <SessionWizardHeader />
+  <div class="p-4 sm:p-6 space-y-4 max-w-6xl mx-auto print:p-0">
+    <div class="no-print">
+      <SessionWizardHeader />
 
-    <div class="flex items-center justify-between gap-4">
-      <div class="space-y-0.5">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-          Results
-        </h1>
-        <p class="text-xs text-gray-500">The crown goes to the best fit</p>
-      </div>
+      <div class="flex items-center justify-between gap-4 pt-6">
+        <div class="space-y-0.5">
+          <h1
+            class="text-lg font-bold text-gray-900 dark:text-white leading-none"
+          >
+            Results
+          </h1>
+          <p class="text-[10px] text-gray-500 font-medium">
+            The crown goes to the best fit
+          </p>
+        </div>
 
-      <div class="flex gap-2 no-print">
-        <UButton
-          icon="i-lucide-file-down"
-          size="sm"
-          variant="soft"
-          @click="exportToPdf"
-        >
-          Export PDF
-        </UButton>
-        <UButton size="sm" variant="soft" @click="goBack">Back</UButton>
-        <UButton size="sm" variant="soft" @click="goHome">Home</UButton>
+        <div class="flex gap-2">
+          <UButton
+            icon="i-lucide-file-down"
+            size="sm"
+            variant="soft"
+            @click="exportToPdf"
+          >
+            Export PDF
+          </UButton>
+          <UButton size="sm" variant="soft" @click="goBack">Back</UButton>
+          <UButton size="sm" variant="soft" @click="goHome">Home</UButton>
+        </div>
       </div>
     </div>
 
@@ -59,9 +65,9 @@
           </UCard>
 
           <template v-else>
-            <!-- Top Section: AI Insights -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div class="lg:col-span-2 space-y-6">
+            <!-- Top Section: AI Insights & Report -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div class="lg:col-span-3 space-y-6 order-2 lg:order-1">
                 <UCard
                   v-if="summary"
                   :ui="{
@@ -80,7 +86,7 @@
                     </div>
                   </template>
 
-                  <div class="space-y-6">
+                  <div class="space-y-8">
                     <div>
                       <h3
                         class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2"
@@ -91,6 +97,40 @@
                         class="text-gray-600 dark:text-gray-400 leading-relaxed"
                       >
                         {{ summary.summary }}
+                      </p>
+                    </div>
+
+                    <!-- Detailed Chapters -->
+                    <div
+                      v-for="(chapter, idx) in summary.chapters"
+                      :key="idx"
+                      class="space-y-3 p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50"
+                    >
+                      <div class="flex items-center gap-2">
+                        <UIcon
+                          :class="{
+                            'text-success-500': chapter.type === 'advantage',
+                            'text-warning-500': chapter.type === 'risk',
+                            'text-primary-500':
+                              !chapter.type || chapter.type === 'neutral',
+                          }"
+                          :name="
+                            chapter.type === 'advantage'
+                              ? 'i-lucide-check-circle'
+                              : chapter.type === 'risk'
+                                ? 'i-lucide-alert-triangle'
+                                : 'i-lucide-book-open'
+                          "
+                          class="w-4 h-4"
+                        />
+                        <h4 class="text-sm font-bold uppercase tracking-wide">
+                          {{ chapter.title }}
+                        </h4>
+                      </div>
+                      <p
+                        class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+                      >
+                        {{ chapter.content }}
                       </p>
                     </div>
 
@@ -276,11 +316,11 @@
                       </div>
                     </div>
                   </template>
-                  <div class="h-48 w-full flex items-center justify-center">
+                  <div class="h-72 w-full flex items-center justify-center">
                     <apexchart
                       :options="radarOptions"
                       :series="radarSeries"
-                      height="150%"
+                      height="120%"
                       type="radar"
                     />
                   </div>
@@ -288,7 +328,7 @@
               </div>
 
               <!-- Sidebar: Scores & Sensitivity -->
-              <div class="space-y-6">
+              <div class="space-y-6 order-1 lg:order-2">
                 <UCard
                   :ui="{ body: 'p-6' }"
                   class="bg-primary-50 dark:bg-primary-950/10 border-primary-100 dark:border-primary-900"
@@ -426,14 +466,9 @@
                     </p>
                   </div>
                 </UCard>
-              </div>
-            </div>
 
-            <!-- Charts & Leaderboard Section -->
-            <div class="space-y-6">
-              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Ranking Chart -->
-                <UCard :ui="{ body: 'p-6' }" class="lg:col-span-1">
+                <UCard :ui="{ body: 'p-6' }">
                   <template #header>
                     <h3
                       class="text-xs font-bold uppercase tracking-wider text-gray-500"
@@ -452,7 +487,7 @@
                 </UCard>
 
                 <!-- Leaderboard -->
-                <UCard :ui="{ body: 'p-4' }" class="lg:col-span-2">
+                <UCard :ui="{ body: 'p-4' }">
                   <div class="space-y-4">
                     <div
                       class="text-xs font-bold uppercase tracking-wider text-gray-500"
@@ -460,7 +495,7 @@
                       Full Leaderboard
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-2">
                       <div
                         v-for="(r, idx) in ranking"
                         :key="r.countryCode"
@@ -503,88 +538,89 @@
                               -{{ formatTotal(ranking[0]!.total - r.total) }}
                             </div>
                           </div>
-                          <UIcon
-                            class="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
-                            name="i-lucide-chevron-right"
-                          />
                         </div>
                       </div>
                     </div>
                   </div>
                 </UCard>
               </div>
+            </div>
 
-              <!-- Data Map -->
-              <UCard :ui="{ body: 'p-4' }">
-                <div class="space-y-4">
-                  <div class="flex items-center justify-between">
-                    <div
-                      class="text-xs font-bold uppercase tracking-wider text-gray-500"
-                    >
-                      Data Map
+            <!-- Charts & Leaderboard Section -->
+            <div class="space-y-6">
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Data Map -->
+                <UCard :ui="{ body: 'p-4' }" class="lg:col-span-3">
+                  <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                      <div
+                        class="text-xs font-bold uppercase tracking-wider text-gray-500"
+                      >
+                        Data Map
+                      </div>
+                      <div class="text-[10px] text-gray-400">
+                        Heatmap of raw scores (1-10)
+                      </div>
                     </div>
-                    <div class="text-[10px] text-gray-400">
-                      Heatmap of raw scores (1-10)
+
+                    <div class="overflow-x-auto">
+                      <table class="w-full text-[10px] border-collapse">
+                        <thead>
+                          <tr>
+                            <th
+                              class="p-1 border border-gray-100 dark:border-gray-800 text-left min-w-20"
+                            >
+                              Country
+                            </th>
+                            <th
+                              v-for="c in sortedCriteria"
+                              :key="c.id"
+                              class="p-1 border border-gray-100 dark:border-gray-800 text-center font-medium"
+                            >
+                              <div
+                                class="-rotate-45 whitespace-nowrap h-12 flex items-end justify-center pb-1"
+                              >
+                                {{ c.label }}
+                              </div>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="r in ranking" :key="r.countryCode">
+                            <td
+                              class="p-1 border border-gray-100 dark:border-gray-800 font-medium truncate"
+                            >
+                              {{ nameFor(r.countryCode) }}
+                            </td>
+                            <td
+                              v-for="c in sortedCriteria"
+                              :key="c.id"
+                              class="p-0 border border-gray-100 dark:border-gray-800 text-center"
+                            >
+                              <button
+                                :class="[
+                                  explicitScoreMap.has(
+                                    `${r.countryCode}::${c.id}`,
+                                  )
+                                    ? ''
+                                    : 'opacity-20',
+                                ]"
+                                :style="{
+                                  backgroundColor: `rgba(59, 130, 246, ${getRawScore(r.countryCode, c.id) / 10})`,
+                                }"
+                                class="w-full h-8 flex items-center justify-center transition-colors hover:ring-1 hover:ring-primary-500"
+                                @click="jumpToScoring(c.id, r.countryCode)"
+                              >
+                                {{ getRawScore(r.countryCode, c.id) }}
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-[10px] border-collapse">
-                      <thead>
-                        <tr>
-                          <th
-                            class="p-1 border border-gray-100 dark:border-gray-800 text-left min-w-20"
-                          >
-                            Country
-                          </th>
-                          <th
-                            v-for="c in sortedCriteria"
-                            :key="c.id"
-                            class="p-1 border border-gray-100 dark:border-gray-800 text-center font-medium"
-                          >
-                            <div
-                              class="-rotate-45 whitespace-nowrap h-12 flex items-end justify-center pb-1"
-                            >
-                              {{ c.label }}
-                            </div>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="r in ranking" :key="r.countryCode">
-                          <td
-                            class="p-1 border border-gray-100 dark:border-gray-800 font-medium truncate"
-                          >
-                            {{ nameFor(r.countryCode) }}
-                          </td>
-                          <td
-                            v-for="c in sortedCriteria"
-                            :key="c.id"
-                            class="p-0 border border-gray-100 dark:border-gray-800 text-center"
-                          >
-                            <button
-                              :class="[
-                                explicitScoreMap.has(
-                                  `${r.countryCode}::${c.id}`,
-                                )
-                                  ? ''
-                                  : 'opacity-20',
-                              ]"
-                              :style="{
-                                backgroundColor: `rgba(59, 130, 246, ${getRawScore(r.countryCode, c.id) / 10})`,
-                              }"
-                              class="w-full h-8 flex items-center justify-center transition-colors hover:ring-1 hover:ring-primary-500"
-                              @click="jumpToScoring(c.id, r.countryCode)"
-                            >
-                              {{ getRawScore(r.countryCode, c.id) }}
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </UCard>
+                </UCard>
+              </div>
             </div>
 
             <!-- Detailed Breakdown -->
@@ -763,98 +799,212 @@
       <!-- Print Only Report Template -->
       <div
         v-if="session"
-        class="hidden print:block print:p-8 space-y-8 bg-white text-gray-900 min-h-screen font-sans"
+        class="hidden print:block space-y-8 bg-white text-gray-900 min-h-screen font-sans"
+        style="height: 100%"
       >
-        <!-- Header -->
+        <!-- Page 1 Container -->
         <div
-          class="flex justify-between items-start border-b-2 border-primary-500 pb-4"
+          class="flex flex-col h-[27.7cm] max-h-[27.7cm] overflow-hidden box-sizing-border-box mb-8"
         >
-          <div>
-            <h1 class="text-3xl font-black text-primary-600">
-              Decision Report
-            </h1>
-            <p class="text-sm text-gray-500">
-              {{ session.title }} • {{ new Date().toLocaleDateString() }}
-            </p>
-          </div>
-          <div class="text-right">
-            <p
-              class="text-xs font-bold uppercase tracking-widest text-gray-400"
-            >
-              Country Royale
-            </p>
-            <p class="text-[10px] text-gray-400">Move Abroad Decision Engine</p>
-          </div>
-        </div>
-
-        <!-- Executive Summary -->
-        <div class="space-y-4">
-          <h2 class="text-2xl font-bold text-gray-900">
-            {{ summary?.headline }}
-          </h2>
-          <p class="text-lg leading-relaxed text-gray-700">
-            {{ summary?.summary }}
-          </p>
+          <!-- Header -->
           <div
-            class="p-4 bg-gray-50 rounded-xl border border-gray-100 italic text-gray-600 text-sm"
+            class="flex justify-between items-start border-b-2 border-primary-500 pb-4"
           >
-            {{ extendedSummary }}
+            <div>
+              <h1 class="text-3xl font-black text-primary-600">
+                Decision Report
+              </h1>
+              <p class="text-sm font-bold text-gray-900">
+                {{ session.title }}
+              </p>
+              <p class="text-xs text-gray-500">
+                Generated on {{ new Date().toLocaleDateString() }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p
+                class="text-xs font-bold uppercase tracking-widest text-gray-400"
+              >
+                Country Royale
+              </p>
+              <p class="text-[10px] text-gray-400">
+                Move Abroad Decision Engine
+              </p>
+            </div>
+          </div>
+
+          <!-- Executive Summary -->
+          <div class="space-y-6 mt-10">
+            <div>
+              <h2 class="text-3xl font-black text-gray-900 leading-tight">
+                {{ summary?.headline }}
+              </h2>
+              <div class="h-1.5 w-20 bg-primary-500 mt-4 rounded-full"></div>
+            </div>
+
+            <p class="text-xl leading-relaxed text-gray-800 font-medium">
+              {{ summary?.summary }}
+            </p>
+
+            <div
+              class="p-6 bg-gray-50 rounded-2xl border-l-4 border-primary-500 text-gray-700 text-base leading-relaxed shadow-sm"
+            >
+              {{ extendedSummary }}
+            </div>
+          </div>
+
+          <!-- Insights Grid -->
+          <div class="grid grid-cols-2 gap-10 mt-12 pt-10">
+            <div class="space-y-6">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-lg bg-success-100 flex items-center justify-center"
+                >
+                  <div class="w-2.5 h-2.5 rounded-full bg-success-600"></div>
+                </div>
+                <h3
+                  class="text-sm font-black uppercase tracking-[0.2em] text-success-700"
+                >
+                  Primary Advantages
+                </h3>
+              </div>
+              <ul class="space-y-4">
+                <li
+                  v-for="(line, i) in summary?.why"
+                  :key="`print-why-${i}`"
+                  class="text-sm text-gray-700 flex gap-3 items-start"
+                >
+                  <span
+                    class="text-success-600 font-bold mt-0.5 text-lg leading-none"
+                    >•</span
+                  >
+                  <span class="leading-relaxed">{{ line }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="space-y-6">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-lg bg-warning-100 flex items-center justify-center"
+                >
+                  <div class="w-2.5 h-2.5 rounded-full bg-warning-600"></div>
+                </div>
+                <h3
+                  class="text-sm font-black uppercase tracking-[0.2em] text-warning-700"
+                >
+                  Critical Considerations
+                </h3>
+              </div>
+              <ul class="space-y-4">
+                <li
+                  v-for="(line, i) in summary?.tradeoffs"
+                  :key="`print-trade-${i}`"
+                  class="text-sm text-gray-700 flex gap-3 items-start"
+                >
+                  <span
+                    class="text-warning-600 font-bold mt-0.5 text-lg leading-none"
+                    >•</span
+                  >
+                  <span class="leading-relaxed">{{ line }}</span>
+                </li>
+                <li
+                  v-for="(line, i) in summary?.risks"
+                  :key="`print-risk-${i}`"
+                  class="text-sm text-gray-700 flex gap-3 items-start"
+                >
+                  <span
+                    class="text-warning-600 font-bold mt-0.5 text-lg leading-none"
+                    >•</span
+                  >
+                  <span class="leading-relaxed">{{ line }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Footer Page 1 -->
+          <div
+            class="pt-4 mb-2 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+          >
+            <div>Page 1</div>
+            <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
           </div>
         </div>
 
-        <!-- Insights Grid -->
-        <div class="grid grid-cols-2 gap-8">
-          <div class="space-y-4">
-            <h3
-              class="text-xs font-black uppercase tracking-widest text-success-600 flex items-center gap-2"
+        <!-- Analysis & Chapters (Moved to Page 2) -->
+        <div class="space-y-4 break-before-page flex flex-col">
+          <div
+            class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-6"
+          >
+            <h1
+              class="text-xl font-black text-primary-600 uppercase tracking-tighter"
             >
-              <span class="w-2 h-2 rounded-full bg-success-500"></span>
-              Primary Advantages
-            </h3>
-            <ul class="space-y-3">
-              <li
-                v-for="(line, i) in summary?.why"
-                :key="`print-why-${i}`"
-                class="text-sm text-gray-700 flex gap-2"
+              Thematic Analysis
+            </h1>
+            <div class="text-right">
+              <p
+                class="text-[8px] font-bold uppercase tracking-widest text-gray-400"
               >
-                <span class="text-success-500 font-bold">•</span>
-                {{ line }}
-              </li>
-            </ul>
+                Decision Report: {{ session.title }}
+              </p>
+            </div>
           </div>
-          <div class="space-y-4">
-            <h3
-              class="text-xs font-black uppercase tracking-widest text-warning-600 flex items-center gap-2"
-            >
-              <span class="w-2 h-2 rounded-full bg-warning-500"></span>
-              Critical Considerations
-            </h3>
-            <ul class="space-y-3">
-              <li
-                v-for="(line, i) in summary?.tradeoffs"
-                :key="`print-trade-${i}`"
-                class="text-sm text-gray-700 flex gap-2"
+
+          <div
+            v-for="(chapter, idx) in summary?.chapters"
+            :key="idx"
+            class="p-6 rounded-2xl border border-gray-100 bg-gray-50/30 mb-6 break-inside-avoid"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                :class="[
+                  'w-2 h-6 rounded-full',
+                  chapter.type === 'advantage'
+                    ? 'bg-success-500'
+                    : chapter.type === 'risk'
+                      ? 'bg-warning-500'
+                      : 'bg-primary-500',
+                ]"
+              ></div>
+              <h4
+                class="text-base font-black uppercase tracking-wider text-gray-900"
               >
-                <span class="text-warning-500 font-bold">•</span>
-                {{ line }}
-              </li>
-              <li
-                v-for="(line, i) in summary?.risks"
-                :key="`print-risk-${i}`"
-                class="text-sm text-gray-700 flex gap-2"
-              >
-                <span class="text-warning-500 font-bold">•</span>
-                {{ line }}
-              </li>
-            </ul>
+                {{ chapter.title }}
+              </h4>
+            </div>
+            <p class="text-sm text-gray-700 leading-relaxed font-medium">
+              {{ chapter.content }}
+            </p>
+          </div>
+
+          <!-- Footer Page 2 -->
+          <div
+            class="pt-4 mb-2 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+          >
+            <div>Page 2</div>
+            <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
           </div>
         </div>
 
         <!-- Full Rankings Table -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-bold border-b border-gray-100 pb-2">
-            Full Leaderboard
-          </h3>
+        <div class="space-y-4 break-before-page flex flex-col">
+          <div
+            class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-6"
+          >
+            <h1
+              class="text-xl font-black text-primary-600 uppercase tracking-tighter"
+            >
+              Full Leaderboard
+            </h1>
+            <div class="text-right">
+              <p
+                class="text-[8px] font-bold uppercase tracking-widest text-gray-400"
+              >
+                Decision Report: {{ session.title }}
+              </p>
+            </div>
+          </div>
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left border-b border-gray-200">
@@ -892,13 +1042,140 @@
               </tr>
             </tbody>
           </table>
+
+          <!-- Footer Page 3 -->
+          <div
+            class="pt-4 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+          >
+            <div>Page 3</div>
+            <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
+          </div>
+        </div>
+
+        <!-- Strengths & Weaknesses (New Page 4) -->
+        <div
+          v-if="strengthsAndWeaknesses.size > 0"
+          class="space-y-4 break-before-page flex flex-col"
+        >
+          <div
+            class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-8"
+          >
+            <h1
+              class="text-xl font-black text-primary-600 uppercase tracking-tighter"
+            >
+              Strategic Insights
+            </h1>
+            <div class="text-right">
+              <p
+                class="text-[8px] font-bold uppercase tracking-widest text-gray-400"
+              >
+                Decision Report: {{ session.title }}
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-12">
+            <div
+              v-for="r in ranking.slice(0, 3)"
+              :key="`sw-${r.countryCode}`"
+              class="space-y-4 break-inside-avoid"
+            >
+              <div
+                class="flex items-center gap-3 border-b border-gray-100 pb-2"
+              >
+                <span class="text-lg font-black text-gray-400"
+                  >#{{ ranking.indexOf(r) + 1 }}</span
+                >
+                <h3 class="text-xl font-bold text-gray-900">
+                  {{ nameFor(r.countryCode) }}
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-2 gap-8">
+                <!-- Strengths -->
+                <div class="space-y-3">
+                  <h4
+                    class="text-[10px] font-black uppercase tracking-widest text-success-600 flex items-center gap-2"
+                  >
+                    <UIcon class="w-3 h-3" name="i-lucide-trending-up" />
+                    Key Strengths
+                  </h4>
+                  <div class="space-y-2">
+                    <div
+                      v-for="s in strengthsAndWeaknesses.get(r.countryCode)
+                        ?.strengths"
+                      :key="s.criterionId"
+                      class="flex items-center justify-between p-2 bg-success-50 rounded-lg border border-success-100"
+                    >
+                      <span class="text-xs font-bold text-success-900">{{
+                        s.label
+                      }}</span>
+                      <span
+                        class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded border border-success-200 text-success-700"
+                      >
+                        {{ s.score }}/10
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Weaknesses -->
+                <div class="space-y-3">
+                  <h4
+                    class="text-[10px] font-black uppercase tracking-widest text-warning-600 flex items-center gap-2"
+                  >
+                    <UIcon class="w-3 h-3" name="i-lucide-trending-down" />
+                    Key Weaknesses
+                  </h4>
+                  <div class="space-y-2">
+                    <div
+                      v-for="w in strengthsAndWeaknesses.get(r.countryCode)
+                        ?.weaknesses"
+                      :key="w.criterionId"
+                      class="flex items-center justify-between p-2 bg-warning-50 rounded-lg border border-warning-100"
+                    >
+                      <span class="text-xs font-bold text-warning-900">{{
+                        w.label
+                      }}</span>
+                      <span
+                        class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded border border-warning-200 text-warning-700"
+                      >
+                        {{ w.score }}/10
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Page 4 -->
+          <div
+            class="pt-4 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+          >
+            <div>Page 4</div>
+            <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
+          </div>
         </div>
 
         <!-- Detailed Analysis Per Country -->
-        <div class="space-y-6 pt-4 break-before-page">
-          <h3 class="text-lg font-bold border-b border-gray-100 pb-2">
-            Criteria Breakdown
-          </h3>
+        <div class="space-y-6 break-before-page flex flex-col">
+          <div
+            class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-6"
+          >
+            <h1
+              class="text-xl font-black text-primary-600 uppercase tracking-tighter"
+            >
+              Criteria Breakdown
+            </h1>
+            <div class="text-right">
+              <p
+                class="text-[8px] font-bold uppercase tracking-widest text-gray-400"
+              >
+                Decision Report: {{ session.title }}
+              </p>
+            </div>
+          </div>
           <div
             v-for="r in ranking"
             :key="`print-detail-${r.countryCode}`"
@@ -944,13 +1221,14 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Footer (Simulated) -->
-        <div class="pt-12 text-center">
-          <p class="text-[10px] text-gray-300 uppercase tracking-widest">
-            End of Report • Generated via Country Royale App
-          </p>
+          <!-- Footer Page 5 -->
+          <div
+            class="pt-4 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+          >
+            <div>Page 5</div>
+            <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
+          </div>
         </div>
       </div>
 
@@ -1052,6 +1330,12 @@ const extendedSummary = computed(() => {
 const sessionId = computed(() => String(route.params.id ?? ""));
 
 const session = computed(() => store.activeSession);
+
+const getScoreObj = (countryCode: string, criterionId: string) => {
+  return session.value?.scores.find(
+    (s) => s.countryCode === countryCode && s.criterionId === criterionId,
+  );
+};
 
 const sortedCriteria = computed(() => {
   return [...(session.value?.criteria || [])].sort(
@@ -1393,9 +1677,37 @@ watch(sessionId, () => {
     padding: 0 !important;
   }
 
+  /* Force page size and margins */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    margin: 1cm;
+  }
+
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Ensure pages take full height and push footers to bottom */
+  .hidden.print\:block {
+    display: flex !important;
+    flex-direction: column;
+  }
+
+  .break-before-page {
+    break-before: page;
+    padding-top: 1cm;
+    height: 27.7cm;
+    max-height: 27.7cm;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+    page-break-after: always;
   }
 }
 

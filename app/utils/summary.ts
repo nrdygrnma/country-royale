@@ -2,10 +2,17 @@ import type { ComparisonSession } from "~/types/countryRoyale";
 import { rankCountries } from "~/utils/scoring";
 import { getMarginInsight, getTopDrivers } from "~/utils/insights";
 
+export interface DecisionChapter {
+  title: string;
+  content: string;
+  type?: "advantage" | "risk" | "neutral";
+}
+
 export interface DecisionSummary {
   headline: string;
   summary: string;
-  why: string[];
+  chapters: DecisionChapter[];
+  why: string[]; // Keep for backward compatibility or small lists
   risks: string[];
   tradeoffs: string[];
 }
@@ -25,7 +32,7 @@ export const buildDecisionSummary = (
   if (!winner) return null;
 
   const margin = getMarginInsight(session);
-  const drivers = getTopDrivers(session, defaultScore, 10);
+  const drivers = getTopDrivers(session, defaultScore, 15);
 
   const positives = drivers.filter((d) => d.deltaContribution > 0);
   const negatives = drivers.filter((d) => d.deltaContribution < 0);
@@ -46,14 +53,70 @@ export const buildDecisionSummary = (
   if (runnerUpName && margin) {
     const gap = margin.margin;
     if (gap > 15) {
-      summary = `${winnerName} dominates this comparison with a substantial lead of ${format(gap)} points. It consistently outperforms ${runnerUpName} across most high-priority criteria.`;
+      summary = `${winnerName} dominates this comparison with a substantial lead of ${format(gap)} points. It consistently outperforms ${runnerUpName} across most high-priority criteria, suggesting a strong fit for your specific requirements.`;
     } else if (gap > 5) {
-      summary = `${winnerName} is a solid choice, maintaining a healthy margin over ${runnerUpName}. While ${runnerUpName} is competitive, ${winnerName}'s strengths in key areas make it the more balanced option.`;
+      summary = `${winnerName} is a solid choice, maintaining a healthy margin over ${runnerUpName}. While ${runnerUpName} is competitive, ${winnerName}'s strengths in key areas make it the more balanced option for your goals.`;
     } else {
-      summary = `It's a very tight race! ${winnerName} edges out ${runnerUpName} by a razor-thin margin of ${format(gap)} points. Your decision might come down to a single criterion or a tie-breaker.`;
+      summary = `It's a very tight race! ${winnerName} edges out ${runnerUpName} by a razor-thin margin of ${format(gap)} points. Your decision might come down to a single criterion or a qualitative "gut feeling" tie-breaker.`;
     }
   } else {
-    summary = `${winnerName} stands alone as the primary choice for your criteria.`;
+    summary = `${winnerName} stands alone as the primary choice for your criteria. Its profile aligns most closely with your defined priorities.`;
+  }
+
+  const chapters: DecisionChapter[] = [];
+
+  // Chapter 1: The Winning Case
+  if (positives.length > 0 && positives[0]) {
+    const top3 = positives.slice(0, 3);
+    const names = top3.map((p) => p.label).join(", ");
+    const primaryDriver = positives[0];
+    chapters.push({
+      title: "The Winning Case",
+      content: `${winnerName}'s victory is primarily driven by its performance in ${names}. In these areas, it provides a cumulative advantage that ${runnerUpName || "other candidates"} struggle to match. Specifically, ${primaryDriver.label} contributes a significant +${format(primaryDriver.deltaContribution)} to the final score.`,
+      type: "advantage",
+    });
+  }
+
+  // Chapter 2: Comparative Trade-offs
+  if (negatives.length > 0 && negatives[0]) {
+    const topNeg = negatives[0];
+    chapters.push({
+      title: "Critical Trade-offs",
+      content: `No destination is perfect. Choosing ${winnerName} means accepting that ${runnerUpName || "competitors"} might actually be superior in ${topNeg.label}. If this specific factor is more critical than its weight suggest, you should carefully weigh it against ${winnerName}'s other benefits.`,
+      type: "risk",
+    });
+  }
+
+  // Chapter 3: Category Breakdown (Simulated based on top drivers)
+  const categories = [
+    ...new Set(session.criteria.map((c) => c.category).filter(Boolean)),
+  ];
+  if (categories.length > 0) {
+    const categoryAnalysis = categories
+      .map((cat) => {
+        const catCriteria = session.criteria.filter((c) => c.category === cat);
+        const catDrivers = drivers.filter((d) =>
+          catCriteria.some((cc) => cc.id === d.criterionId),
+        );
+        const catImpact = catDrivers.reduce(
+          (acc, d) => acc + d.deltaContribution,
+          0,
+        );
+
+        if (Math.abs(catImpact) > 1) {
+          return `${cat} is a ${catImpact > 0 ? "strength" : "relative weakness"} for ${winnerName}${catImpact > 0 ? ", helping" : " although it slightly trails"} compared to ${runnerUpName}.`;
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    if (categoryAnalysis.length > 0) {
+      chapters.push({
+        title: "Thematic Analysis",
+        content: `Breaking down the results by category, we see that ${categoryAnalysis.join(" ")}`,
+        type: "neutral",
+      });
+    }
   }
 
   const why: string[] = positives
@@ -85,5 +148,5 @@ export const buildDecisionSummary = (
     );
   }
 
-  return { headline, summary, why, risks, tradeoffs };
+  return { headline, summary, chapters, why, risks, tradeoffs };
 };

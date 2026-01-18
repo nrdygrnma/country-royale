@@ -13,6 +13,8 @@ export interface PresetCriterion {
   weight: number;
   direction: "higher-is-better" | "lower-is-better";
   category?: CriterionCategory;
+  mode?: "manual" | "auto";
+  sourceKey?: string;
 }
 
 export interface CriteriaSet {
@@ -52,6 +54,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 8,
     direction: "lower-is-better",
     category: "Money",
+    mode: "auto",
+    sourceKey: "numbeo:cost_of_living",
   },
   {
     label: "Housing availability",
@@ -75,6 +79,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 6,
     direction: "higher-is-better",
     category: "Work & Opportunity",
+    mode: "auto",
+    sourceKey: "worldbank:gdp",
   },
   {
     label: "Business opportunities",
@@ -112,6 +118,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 6,
     direction: "higher-is-better",
     category: "Infrastructure & Practicalities",
+    mode: "auto",
+    sourceKey: "restcountries:languages",
   },
   {
     label: "Walkability / transport",
@@ -126,6 +134,17 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 5,
     direction: "higher-is-better",
     category: "Infrastructure & Practicalities",
+    mode: "auto",
+    sourceKey: "restcountries:timezones",
+  },
+  {
+    label: "Driving side",
+    description: "Left or right side of the road",
+    weight: 3,
+    direction: "higher-is-better",
+    category: "Infrastructure & Practicalities",
+    mode: "auto",
+    sourceKey: "restcountries:car_side",
   },
 
   // Lifestyle & Social
@@ -158,6 +177,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "higher-is-better",
     category: "Health & Environment",
+    mode: "auto",
+    sourceKey: "worldbank:life_expectancy",
   },
   {
     label: "Climate fit",
@@ -165,6 +186,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 6,
     direction: "higher-is-better",
     category: "Health & Environment",
+    mode: "auto",
+    sourceKey: "restcountries:climate",
   },
   {
     label: "Air quality",
@@ -181,6 +204,8 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 9,
     direction: "higher-is-better",
     category: "Risk",
+    mode: "auto",
+    sourceKey: "numbeo:crime_index",
   },
   {
     label: "Political stability",

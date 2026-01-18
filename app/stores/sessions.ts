@@ -32,6 +32,7 @@ export const useSessionsStore = defineStore("sessions", () => {
   const activeSessionId = ref<string | null>(null);
   const isHydrated = skipHydrate(ref(false));
   const customCountries = ref<Country[]>([]);
+  const masterCountries = ref<Country[]>([]);
   const userPresets = ref<CriteriaSet[]>([]);
   const masterCriteria = ref<Criterion[]>([]);
   const masterCategories = ref<string[]>([]);
@@ -68,6 +69,23 @@ export const useSessionsStore = defineStore("sessions", () => {
   const addCustomCountry = (country: Country) => {
     if (customCountries.value.some((c) => c.code === country.code)) return;
     customCountries.value = [...customCountries.value, country];
+  };
+
+  const upsertMasterCountry = (country: Country) => {
+    const idx = masterCountries.value.findIndex((c) => c.code === country.code);
+    if (idx === -1) {
+      masterCountries.value = [...masterCountries.value, country];
+    } else {
+      masterCountries.value = masterCountries.value.map((c) =>
+        c.code === country.code ? country : c,
+      );
+    }
+  };
+
+  const deleteMasterCountry = (code: string) => {
+    masterCountries.value = masterCountries.value.filter(
+      (c) => c.code !== code,
+    );
   };
 
   const duplicateSession = (sourceId: string) => {
@@ -123,6 +141,9 @@ export const useSessionsStore = defineStore("sessions", () => {
       weight: clamp(criterion.weight, 1, 10),
       direction: criterion.direction ?? "higher-is-better",
       category: criterion.category,
+      mode: criterion.mode ?? "manual",
+      sourceKey: criterion.sourceKey,
+      lastFetched: criterion.lastFetched,
     };
 
     const idx = activeSession.value.criteria.findIndex((c) => c.id === id);
@@ -150,12 +171,14 @@ export const useSessionsStore = defineStore("sessions", () => {
     countryCode: string,
     criterionId: string,
     score: number,
+    rawValue?: string | number,
   ) => {
     if (!activeSession.value) return;
     const nextScore: CountryScore = {
       countryCode,
       criterionId,
       score: clamp(score, 1, 10),
+      rawValue,
     };
 
     const idx = activeSession.value.scores.findIndex(
@@ -186,14 +209,28 @@ export const useSessionsStore = defineStore("sessions", () => {
       description: criterion.description?.trim() || undefined,
       weight: clamp(criterion.weight, 1, 10),
       direction: criterion.direction ?? "higher-is-better",
+      mode: criterion.mode ?? "manual",
     };
 
     const idx = masterCriteria.value.findIndex((c) => c.id === id);
     if (idx === -1) masterCriteria.value = [...masterCriteria.value, next];
-    else
+    else {
       masterCriteria.value = masterCriteria.value.map((c) =>
         c.id === id ? next : c,
       );
+      // Propagate changes to all sessions if the criterion exists there
+      sessions.value.forEach((s) => {
+        s.criteria = s.criteria.map((c) => {
+          if (
+            c.label === next.label ||
+            (criterion.id && c.id === criterion.id)
+          ) {
+            return { ...c, ...next, id: c.id };
+          }
+          return c;
+        });
+      });
+    }
 
     return id;
   };
@@ -243,6 +280,10 @@ export const useSessionsStore = defineStore("sessions", () => {
     localStorage.setItem(
       `${STORAGE_KEY}:custom-countries`,
       JSON.stringify(customCountries.value),
+    );
+    localStorage.setItem(
+      `${STORAGE_KEY}:master-countries`,
+      JSON.stringify(masterCountries.value),
     );
     localStorage.setItem(
       `${STORAGE_KEY}:user-presets`,
@@ -320,6 +361,8 @@ export const useSessionsStore = defineStore("sessions", () => {
         weight: c.weight,
         direction: c.direction,
         category: c.category as any,
+        mode: c.mode,
+        sourceKey: c.sourceKey,
       })),
     };
     userPresets.value = [preset, ...userPresets.value];
@@ -344,6 +387,7 @@ export const useSessionsStore = defineStore("sessions", () => {
   const clearAllSessions = () => {
     sessions.value = [];
     customCountries.value = [];
+    masterCountries.value = [];
     userPresets.value = [];
     activeSessionId.value = null;
   };
@@ -351,6 +395,7 @@ export const useSessionsStore = defineStore("sessions", () => {
   const bootstrapFromPersisted = (data: {
     sessions: ComparisonSession[];
     customCountries: Country[];
+    masterCountries?: Country[];
     userPresets?: CriteriaSet[];
     masterCriteria?: Criterion[];
     masterCategories?: string[];
@@ -358,6 +403,7 @@ export const useSessionsStore = defineStore("sessions", () => {
   }) => {
     sessions.value = data.sessions ?? [];
     customCountries.value = data.customCountries ?? [];
+    masterCountries.value = data.masterCountries ?? [];
     userPresets.value = data.userPresets ?? [];
 
     // Initialize Library if empty
@@ -380,7 +426,14 @@ export const useSessionsStore = defineStore("sessions", () => {
   };
 
   watch(
-    [sessions, customCountries, userPresets, masterCriteria, masterCategories],
+    [
+      sessions,
+      customCountries,
+      masterCountries,
+      userPresets,
+      masterCriteria,
+      masterCategories,
+    ],
     () => {
       if (!isHydrated.value) return;
       saveToStorage();
@@ -394,6 +447,7 @@ export const useSessionsStore = defineStore("sessions", () => {
     activeSession,
     isHydrated,
     customCountries,
+    masterCountries,
     userPresets,
     masterCriteria,
     masterCategories,
@@ -403,6 +457,8 @@ export const useSessionsStore = defineStore("sessions", () => {
     duplicateSession,
     setCountries,
     addCustomCountry,
+    upsertMasterCountry,
+    deleteMasterCountry,
     upsertCriterion,
     removeCriterion,
     setScore,

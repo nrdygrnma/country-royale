@@ -1,13 +1,17 @@
 <template>
-  <div class="p-4 sm:p-6 space-y-6 max-w-5xl mx-auto">
+  <div class="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
     <SessionWizardHeader />
 
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex items-center justify-between gap-4 py-1">
       <div class="space-y-0.5">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        <h1
+          class="text-lg font-bold text-gray-900 dark:text-white leading-none"
+        >
           Pick countries
         </h1>
-        <p class="text-xs text-gray-500">Choose your candidates</p>
+        <p class="text-[10px] text-gray-500 font-medium">
+          Choose your candidates
+        </p>
       </div>
 
       <div class="flex gap-2">
@@ -82,7 +86,7 @@
                 @create="handleCreateCountry"
               >
                 <template #create-item-label="{ item }">
-                  Add custom country:
+                  Add country:
                   <span class="font-medium italic">{{ item }}</span>
                 </template>
               </USelectMenu>
@@ -150,6 +154,16 @@
                   meaningful ranking in the results.
                 </p>
                 <p>
+                  <strong>Countries Management</strong>: You can also manage
+                  your global list of countries in the
+                  <NuxtLink
+                    class="text-primary-500 hover:underline font-bold"
+                    to="/countries"
+                  >
+                    Countries Library </NuxtLink
+                  >.
+                </p>
+                <p>
                   <strong>Custom countries</strong> can be added if your
                   specific destination isn't in the list—just type the name and
                   press Enter.
@@ -204,6 +218,62 @@
       </template>
     </ClientOnly>
   </div>
+  <div v-if="isHydrated">
+    <!-- Country Verification Modal -->
+    <AppModal
+      v-model:open="isVerificationModalOpen"
+      :description="`We found ${verificationResults.length} possible matches for '${pendingCountryName}'.`"
+      title="Verify Country"
+    >
+      <div class="p-4 space-y-4">
+        <div class="max-h-64 overflow-y-auto space-y-2">
+          <div
+            v-for="c in verificationResults"
+            :key="c.cca2"
+            class="flex items-center justify-between p-3 border border-gray-100 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+            @click="confirmCountry(c)"
+          >
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">{{ c.flag }}</span>
+              <div>
+                <div class="font-bold text-sm">{{ c.name.common }}</div>
+                <div class="text-[10px] text-gray-500">
+                  {{ c.region }} • {{ c.cca2 }}
+                </div>
+              </div>
+            </div>
+            <UButton
+              color="primary"
+              icon="i-lucide-check"
+              size="xs"
+              variant="ghost"
+            />
+          </div>
+        </div>
+
+        <div
+          class="p-3 bg-warning-50 dark:bg-warning-950/20 rounded-xl border border-warning-100 dark:border-warning-900"
+        >
+          <div class="text-[10px] font-bold text-warning-600 uppercase mb-1">
+            No match?
+          </div>
+          <p class="text-xs text-warning-700/80 dark:text-warning-300/80 mb-2">
+            If none of these are correct, you can use the name as-is with a
+            temporary code.
+          </p>
+          <UButton
+            block
+            color="warning"
+            size="xs"
+            variant="soft"
+            @click="confirmAsCustom"
+          >
+            Use "{{ pendingCountryName }}" as custom
+          </UButton>
+        </div>
+      </div>
+    </AppModal>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -213,11 +283,16 @@ const store = useSessionsStore();
 const router = useRouter();
 const route = useRoute();
 const selectedCodes = ref<Array<{ label: string; value: string }>>([]);
+const isHydrated = ref(false);
+
+onMounted(() => {
+  isHydrated.value = true;
+});
 
 const sessionId = computed(() => String(route.params.id ?? ""));
 
 const allAvailableCountries = computed(() => {
-  return [...COUNTRIES, ...store.customCountries];
+  return [...COUNTRIES, ...store.masterCountries, ...store.customCountries];
 });
 
 // Build the dropdown items
@@ -238,9 +313,40 @@ const actualCodes = computed(() => {
     .filter(Boolean);
 });
 
-const handleCreateCountry = (name: string) => {
-  if (!name) return;
+const isVerificationModalOpen = ref(false);
+const pendingCountryName = ref("");
+const verificationResults = ref<any[]>([]);
 
+const handleCreateCountry = async (name: string) => {
+  if (!name) return;
+  pendingCountryName.value = name;
+
+  try {
+    const data: any[] = await $fetch(
+      `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}`,
+    );
+    if (data && data.length > 0) {
+      verificationResults.value = data;
+      isVerificationModalOpen.value = true;
+    } else {
+      confirmAsCustom();
+    }
+  } catch (e) {
+    confirmAsCustom();
+  }
+};
+
+const confirmCountry = (c: any) => {
+  const name = c.name.common;
+  const code = c.cca2;
+  const region = c.region;
+
+  addAndSelect(name, code, region);
+  isVerificationModalOpen.value = false;
+};
+
+const confirmAsCustom = () => {
+  const name = pendingCountryName.value;
   // Derive a unique code
   const base = name.replace(/\s+/g, " ").toUpperCase();
   let code = base.slice(0, 3);
@@ -251,20 +357,25 @@ const handleCreateCountry = (name: string) => {
     i++;
   }
 
-  // 1. Add to persistent store (this updates allAvailableCountries -> countryItems)
-  const newCountry = { name, code, region: "Custom" as const };
+  addAndSelect(name, code, "Custom");
+  isVerificationModalOpen.value = false;
+};
+
+const addAndSelect = (name: string, code: string, region: string) => {
+  // 1. Add to persistent store (both master and custom for compatibility)
+  const newCountry = { name, code, region };
+  store.upsertMasterCountry(newCountry);
   store.addCustomCountry(newCountry);
 
-  // 2. Create the item object
-  const newItem = { label: name, value: code };
-
-  // 3. Update the v-model (selectedCodes)
-  // Since we are multiple, we push or re-assign
+  // 2. Update the v-model
   const alreadySelected = selectedCodes.value.some(
     (x) => (typeof x === "object" && x !== null ? x.value : x) === code,
   );
   if (!alreadySelected) {
-    selectedCodes.value = [...selectedCodes.value, newItem];
+    selectedCodes.value = [
+      ...selectedCodes.value,
+      { label: name, value: code },
+    ];
   }
 };
 
