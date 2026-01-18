@@ -9,7 +9,7 @@ export async function fetchCountryImage(
   countryName: string,
 ): Promise<UnsplashImage | null> {
   const query = encodeURIComponent(countryName);
-  const url = `https://api.unsplash.com/photos?client_id=${UNSPLASH_CLIENT_ID}&query=${query}`;
+  const url = `https://api.unsplash.com/search/photos?client_id=${UNSPLASH_CLIENT_ID}&query=${query}`;
 
   try {
     const response = await fetch(url);
