@@ -342,54 +342,6 @@ const getSessionImage = (session: any) => {
 
 onMounted(() => {
   isHydrated.value = true;
-  const share = router.currentRoute.value.query.share;
-  if (share && typeof share === "string") {
-    try {
-      const json = Buffer.from(share, "base64").toString("utf8");
-      const data = JSON.parse(json);
-
-      // Map back to ComparisonSession
-      const criteria = (data.cr || []).map((c: any) => ({
-        id: crypto.randomUUID(),
-        label: c[0],
-        description: c[1] || undefined,
-        weight: c[2],
-        direction: c[3] as "higher-is-better" | "lower-is-better",
-      }));
-
-      // Need a map for criterion IDs since we regenerated them
-      const criterionMap = new Map();
-      (data.cr || []).forEach((c: any, i: number) => {
-        criterionMap.set(c[0], criteria[i].id);
-      });
-
-      const scores = (data.s || []).map((s: any) => ({
-        countryCode: s[0],
-        criterionId: criterionMap.get(s[1]) || s[1], // Try map by label/id
-        score: s[2],
-      }));
-
-      const newId = store.createSession(data.t || "Shared Comparison");
-      const session = store.sessions.find((s) => s.id === newId);
-      if (session) {
-        session.countryCodes = data.c || [];
-        session.criteria = criteria;
-        session.scores = scores;
-        session.notes = data.n || {};
-      }
-
-      // Clear query param
-      router.replace("/");
-
-      useToast().add({
-        title: "Session shared",
-        description: `Imported "${data.t}" via link.`,
-        color: "success",
-      });
-    } catch (e) {
-      console.error("Failed to import share link", e);
-    }
-  }
 });
 
 const onCreate = () => {

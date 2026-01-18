@@ -116,35 +116,14 @@
                   <span class="text-xs text-gray-500 line-clamp-1">{{
                     (row.original as Criterion).description || "—"
                   }}</span>
-                  <UTooltip>
-                    <template #text>
-                      <div class="flex flex-col gap-1 max-w-xs">
-                        <span class="font-bold">{{
-                          DATA_SOURCES.find(
-                            (s) =>
-                              s.value === (row.original as Criterion).sourceKey,
-                          )?.label || (row.original as Criterion).sourceKey
-                        }}</span>
-                        <span
-                          v-if="
-                            DATA_SOURCES.find(
-                              (s) =>
-                                s.value ===
-                                (row.original as Criterion).sourceKey,
-                            )?.description
-                          "
-                          class="text-[10px] opacity-80 leading-tight"
-                        >
-                          {{
-                            DATA_SOURCES.find(
-                              (s) =>
-                                s.value ===
-                                (row.original as Criterion).sourceKey,
-                            )?.description
-                          }}
-                        </span>
-                      </div>
-                    </template>
+                  <UTooltip
+                    :text="
+                      DATA_SOURCES.find(
+                        (s) =>
+                          s.value === (row.original as Criterion).sourceKey,
+                      )?.description || 'No description available'
+                    "
+                  >
                     <span
                       v-if="(row.original as Criterion).mode === 'auto'"
                       class="text-[10px] text-blue-500 font-medium flex items-center gap-1"

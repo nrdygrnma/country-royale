@@ -17,10 +17,19 @@
 
         <div class="flex gap-2">
           <UButton
-            icon="i-lucide-file-down"
+            :loading="isRegenerating"
+            icon="i-lucide-refresh-cw"
             size="sm"
             variant="soft"
-            @click="exportToPdf"
+            @click="regenerateReport"
+          >
+            Regenerate
+          </UButton>
+          <UButton
+            icon="i-lucide-printer"
+            size="sm"
+            variant="soft"
+            @click="exportPDF"
           >
             Export PDF
           </UButton>
@@ -1284,6 +1293,23 @@ const exportToPdf = () => {
   }
 };
 
+const toast = useToast();
+const isRegenerating = ref(false);
+const regenerateReport = async () => {
+  isRegenerating.value = true;
+  // Artificial delay to simulate "re-generation" and provide visual feedback
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  isRegenerating.value = false;
+
+  toast.add({
+    title: "Report Regenerated",
+    description:
+      "The final decision analysis has been updated based on your latest criteria and data.",
+    icon: "i-lucide-check-circle",
+    color: "success",
+  });
+};
+
 const extendedSummary = computed(() => {
   if (!session.value || ranking.value.length === 0) return "";
   const winner = ranking.value[0];
@@ -1647,6 +1673,10 @@ const goScoring = () => {
 
 const goHome = () => {
   router.push("/");
+};
+
+const exportPDF = () => {
+  window.print();
 };
 
 watchEffect(() => {

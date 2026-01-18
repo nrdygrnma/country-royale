@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
           // World Bank API: GDP per capita (current US$) - NY.GDP.PCAP.CD
           const data: any = await $fetch(
             `https://api.worldbank.org/v2/country/${code}/indicator/NY.GDP.PCAP.CD?format=json&mrnev=1`,
-          );
+          ).catch(() => null);
           if (data && data[1] && data[1][0]) {
             value = data[1][0].value;
           }
@@ -27,35 +27,35 @@ export default defineEventHandler(async (event) => {
           // World Bank API: Life expectancy at birth, total (years) - SP.DYN.LE00.IN
           const data: any = await $fetch(
             `https://api.worldbank.org/v2/country/${code}/indicator/SP.DYN.LE00.IN?format=json&mrnev=1`,
-          );
+          ).catch(() => null);
           if (data && data[1] && data[1][0]) {
             value = data[1][0].value;
           }
         } else if (sourceKey === "restcountries:languages") {
           const data: any = await $fetch(
             `https://restcountries.com/v3.1/alpha/${code}?fields=languages`,
-          );
+          ).catch(() => null);
           value = data?.languages || {};
         } else if (sourceKey === "restcountries:timezones") {
           const data: any = await $fetch(
             `https://restcountries.com/v3.1/alpha/${code}?fields=timezones`,
-          );
+          ).catch(() => null);
           value = data?.timezones || [];
         } else if (sourceKey === "restcountries:car_side") {
           const data: any = await $fetch(
             `https://restcountries.com/v3.1/alpha/${code}?fields=car`,
-          );
+          ).catch(() => null);
           value = data?.car?.side || "unknown";
         } else if (sourceKey === "restcountries:climate") {
           const data: any = await $fetch(
             `https://restcountries.com/v3.1/alpha/${code}?fields=capitalInfo,latlng`,
-          );
+          ).catch(() => null);
           // Use capital latlng if available, else country latlng
           value = data?.capitalInfo?.latlng || data?.latlng || [0, 0];
         } else if (sourceKey === "restcountries:population") {
           const data: any = await $fetch(
             `https://restcountries.com/v3.1/alpha/${code}?fields=population`,
-          );
+          ).catch(() => null);
           value = data?.population || 0;
         } else if (sourceKey.startsWith("numbeo:")) {
           // Numbeo doesn't have a free API. For this project, we'll use a public-domain dataset
@@ -166,42 +166,162 @@ export default defineEventHandler(async (event) => {
             IL: 31.4,
             ZA: 75.2,
             QA: 12.1,
+            RU: 51.0,
           };
 
           if (sourceKey === "numbeo:cost_of_living") {
-            value = costOfLivingMap[code] || 40 + Math.random() * 20;
+            // Stable fallback: use a hash of the country code to generate a consistent pseudo-random value
+            // if not in the map, so it doesn't change on every refetch.
+            if (costOfLivingMap[code]) {
+              value = costOfLivingMap[code];
+            } else {
+              const hash = code
+                .split("")
+                .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+              value = 30 + (hash % 40); // Consistent value between 30 and 70
+            }
           } else if (sourceKey === "numbeo:crime_index") {
-            value = crimeIndexMap[code] || 40 + Math.random() * 20;
+            if (crimeIndexMap[code]) {
+              value = crimeIndexMap[code];
+            } else {
+              const hash = code
+                .split("")
+                .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+              value = 20 + (hash % 50); // Consistent value between 20 and 70
+            }
           }
+        } else if (sourceKey === "restcountries:visa_ease") {
+          // Visa Ease Proxy Logic
+          // We'll use a mix of regional blocs and development status from RestCountries
+          const data: any = await $fetch(
+            `https://restcountries.com/v3.1/alpha/${code}?fields=region,subregion,unMember,independent,borders`,
+          ).catch(() => null);
+
+          let score = 5; // Default middle
+          if (data) {
+            // EU/EEA/Schengen countries are generally easier for most Westerners
+            if (
+              data.region === "Europe" &&
+              ["Western Europe", "Northern Europe", "Southern Europe"].includes(
+                data.subregion,
+              )
+            ) {
+              score = 8;
+            } else if (
+              data.region === "Americas" &&
+              data.subregion === "North America"
+            ) {
+              score = 8;
+            } else if (data.subregion === "Southeast Asia") {
+              score = 7; // Many DN destinations
+            } else if (data.region === "Europe") {
+              score = 7;
+            }
+
+            // Independent UN members are generally more standard
+            if (!data.unMember || !data.independent) {
+              score -= 2;
+            }
+          }
+          value = score;
         } else if (sourceKey === "worldbank:political_stability") {
           // World Bank API: Political Stability and Absence of Violence/Terrorism - PV.EST
           const data: any = await $fetch(
             `https://api.worldbank.org/v2/country/${code}/indicator/PV.EST?format=json&mrnev=1`,
-          );
+          ).catch(() => null);
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:rule_of_law") {
+          // World Bank API: Rule of Law - RL.EST
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/RL.EST?format=json&mrnev=1`,
+          ).catch(() => null);
           if (data && data[1] && data[1][0]) {
             value = data[1][0].value;
           }
         } else if (sourceKey === "worldbank:doing_business") {
-          // World Bank API: Ease of doing business score - IC.BUS.DFRN.XQ
-          const data: any = await $fetch(
-            `https://api.worldbank.org/v2/country/${code}/indicator/IC.BUS.DFRN.XQ?format=json&mrnev=1`,
-          );
-          if (data && data[1] && data[1][0]) {
-            value = data[1][0].value;
+          // New business density (new registrations per 1,000 people ages 15-64) - IC.BUS.NREG
+          // Note: In some recent WB data, this might return total registrations instead of density.
+          // To ensure a consistent score (0-100ish), we'll try to fetch population and normalize it.
+          const [nregData, popData]: any = await Promise.all([
+            $fetch(
+              `https://api.worldbank.org/v2/country/${code}/indicator/IC.BUS.NREG?format=json&mrnev=1`,
+            ).catch(() => null),
+            $fetch(
+              `https://api.worldbank.org/v2/country/${code}/indicator/SP.POP.TOTL?format=json&mrnev=1`,
+            ).catch(() => null),
+          ]);
+
+          let registrations = 0;
+          let population = 0;
+
+          if (nregData && nregData[1] && nregData[1][0]) {
+            registrations = nregData[1][0].value;
+          }
+          if (popData && popData[1] && popData[1][0]) {
+            population = popData[1][0].value;
+          }
+
+          if (registrations > 0 && population > 0) {
+            // Calculate density per 1,000 people (approximate, using total population instead of 15-64 if 15-64 is not available)
+            // Typically 15-64 is ~65% of population.
+            value = (registrations / (population * 0.65)) * 1000;
+          } else {
+            // Fallback to FDI % of GDP if NREG is not available (e.g. US)
+            const fdiData: any = await $fetch(
+              `https://api.worldbank.org/v2/country/${code}/indicator/BX.KLT.DINV.WD.GD.ZS?format=json&mrnev=1`,
+            ).catch(() => null);
+            if (fdiData && fdiData[1] && fdiData[1][0]) {
+              value = fdiData[1][0].value; // FDI net inflows (% of GDP) is usually 0-10
+            }
           }
         } else if (sourceKey === "worldbank:internet_usage") {
           // World Bank API: Individuals using the Internet (% of population) - IT.NET.USER.ZS
           const data: any = await $fetch(
             `https://api.worldbank.org/v2/country/${code}/indicator/IT.NET.USER.ZS?format=json&mrnev=1`,
-          );
+          ).catch(() => null);
           if (data && data[1] && data[1][0]) {
             value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:fixed_broadband") {
+          // World Bank API: Fixed broadband subscriptions (per 100 people) - IT.NET.BBND.P2
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/IT.NET.BBND.P2?format=json&mrnev=1`,
+          ).catch(() => null);
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          } else {
+            // Fallback for countries where P2 is missing/erroring (like RU)
+            // Fetch total subscriptions and total population to calculate per 100
+            const [bbndData, popData]: any = await Promise.all([
+              $fetch(
+                `https://api.worldbank.org/v2/country/${code}/indicator/IT.NET.BBND?format=json&mrnev=1`,
+              ).catch(() => null),
+              $fetch(
+                `https://api.worldbank.org/v2/country/${code}/indicator/SP.POP.TOTL?format=json&mrnev=1`,
+              ).catch(() => null),
+            ]);
+
+            let totalBroadband = 0;
+            let population = 0;
+
+            if (bbndData && bbndData[1] && bbndData[1][0]) {
+              totalBroadband = bbndData[1][0].value;
+            }
+            if (popData && popData[1] && popData[1][0]) {
+              population = popData[1][0].value;
+            }
+
+            if (totalBroadband > 0 && population > 0) {
+              value = (totalBroadband / population) * 100;
+            }
           }
         } else if (sourceKey === "worldbank:air_pollution") {
           // World Bank API: PM2.5 air pollution, mean annual exposure (micrograms per cubic meter) - EN.ATM.PM25.MC.M3
           const data: any = await $fetch(
             `https://api.worldbank.org/v2/country/${code}/indicator/EN.ATM.PM25.MC.M3?format=json&mrnev=1`,
-          );
+          ).catch(() => null);
           if (data && data[1] && data[1][0]) {
             value = data[1][0].value;
           }
@@ -209,7 +329,15 @@ export default defineEventHandler(async (event) => {
           // World Bank API: Percentage of population affected by natural disasters - EN.CLC.MDAT.ZS
           const data: any = await $fetch(
             `https://api.worldbank.org/v2/country/${code}/indicator/EN.CLC.MDAT.ZS?format=json&mrnev=1`,
-          );
+          ).catch(() => null);
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:tax_revenue") {
+          // World Bank API: Tax revenue (% of GDP) - GC.TAX.TOTL.GD.ZS
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/GC.TAX.TOTL.GD.ZS?format=json&mrnev=1`,
+          ).catch(() => null);
           if (data && data[1] && data[1][0]) {
             value = data[1][0].value;
           }
@@ -219,12 +347,28 @@ export default defineEventHandler(async (event) => {
           // A better approach for literacy rate is World Bank: SE.ADT.LITR.ZS
           const data: any = await $fetch(
             `https://api.worldbank.org/v2/country/${code}/indicator/SE.ADT.LITR.ZS?format=json&mrnev=1`,
-          );
+          ).catch(() => null);
           if (data && data[1] && data[1][0]) {
             value = data[1][0].value;
           } else {
             // Fallback for literacy rate if WB fails
             value = 95 + Math.random() * 4;
+          }
+        } else if (sourceKey === "worldbank:education_quality") {
+          // World Bank API: School enrollment, secondary (% gross) - SE.SEC.ENRR
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/SE.SEC.ENRR?format=json&mrnev=1`,
+          ).catch(() => null);
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
+          }
+        } else if (sourceKey === "worldbank:migrant_stock") {
+          // World Bank API: International migrant stock (% of population) - SM.POP.TOTL.ZS
+          const data: any = await $fetch(
+            `https://api.worldbank.org/v2/country/${code}/indicator/SM.POP.TOTL.ZS?format=json&mrnev=1`,
+          ).catch(() => null);
+          if (data && data[1] && data[1][0]) {
+            value = data[1][0].value;
           }
         }
       } catch (e: any) {

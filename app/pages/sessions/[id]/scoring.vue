@@ -802,14 +802,29 @@
 
         <template #footer>
           <div class="flex justify-between items-center w-full">
-            <UButton
-              color="neutral"
-              size="sm"
-              variant="ghost"
-              @click="showSyncModal = false"
-            >
-              Cancel
-            </UButton>
+            <div class="flex gap-2">
+              <UButton
+                color="neutral"
+                size="sm"
+                variant="ghost"
+                @click="showSyncModal = false"
+              >
+                Close
+              </UButton>
+              <UButton
+                v-if="
+                  syncStatus === 'explaining' || syncStatus === 'questioning'
+                "
+                :loading="isSyncing"
+                color="primary"
+                icon="i-lucide-refresh-cw"
+                size="sm"
+                variant="soft"
+                @click="syncCurrentCriterion"
+              >
+                Refetch Data
+              </UButton>
+            </div>
             <div
               v-if="syncStatus === 'explaining'"
               class="text-[10px] text-gray-400"
@@ -1016,18 +1031,36 @@ const getInterpretation = computed(() => {
   if (sourceKey === "worldbank:disaster_risk") {
     return `Represents the average annual percentage of the population affected by natural disasters. Higher percentages indicate greater vulnerability or more frequent extreme events.`;
   }
+  if (sourceKey === "worldbank:education_quality") {
+    return `Based on secondary school enrollment rates from the World Bank. High enrollment reflects a well-developed education system and better long-term opportunities for residents.`;
+  }
 
   if (sourceKey === "worldbank:political_stability") {
     return `The Political Stability indicator measures perceptions of the likelihood of political instability and/or politically-motivated violence. Raw values typically range from -2.5 (weak) to 2.5 (strong). Higher values indicate a more stable and peaceful environment.`;
   }
+  if (sourceKey === "worldbank:rule_of_law") {
+    return `Based on the World Bank's Rule of Law indicator, which captures perceptions of the extent to which agents have confidence in and abide by the rules of society, including property rights and contract enforcement. Values range from -2.5 to 2.5.`;
+  }
   if (sourceKey === "worldbank:doing_business") {
-    return `The Ease of Doing Business score (0-100) measures how close an economy is to the best regulatory practices. A higher score indicates a more business-friendly environment.`;
+    return `Measures new business density (registrations per 1,000 people) and investment climate. A higher value indicates a more dynamic business environment or higher foreign investment. Data is normalized against ${modeText}.`;
   }
   if (sourceKey === "worldbank:internet_usage") {
     return `This represents the percentage of the population using the internet. It serves as a proxy for infrastructure quality and connectivity.`;
   }
+  if (sourceKey === "worldbank:fixed_broadband") {
+    return `Based on fixed broadband subscriptions per 100 people. This is a reliable proxy for the availability of high-speed, stable internet infrastructure.`;
+  }
   if (sourceKey === "worldbank:air_pollution") {
     return `Mean annual exposure to PM2.5 air pollution (micrograms per cubic meter). Higher values indicate worse air quality. Scores are calculated so that lower pollution yields a higher 1-10 score.`;
+  }
+  if (sourceKey === "worldbank:tax_revenue") {
+    return `Based on Tax Revenue (% of GDP) from the World Bank. This indicator measures the tax burden relative to the size of the economy. Lower percentages generally indicate a lower overall tax environment.`;
+  }
+  if (sourceKey === "restcountries:visa_ease") {
+    return `Calculates a heuristic visa-ease score (1-10) based on regional open-border agreements (like EU/Schengen), development status, and common digital nomad accessibility in regions like Southeast Asia.`;
+  }
+  if (sourceKey === "worldbank:migrant_stock") {
+    return `Based on the World Bank's International Migrant Stock indicator, which measures the percentage of a country's population that is foreign-born. A higher percentage suggests a more established international community, often making it easier for newcomers to build a social network.`;
   }
 
   return `The scores were normalized based on a ${modeText} of your selection of countries.`;

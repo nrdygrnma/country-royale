@@ -7,7 +7,7 @@
         <h1
           class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
         >
-          <UIcon class="text-primary-500" name="i-lucide-globe" />
+          <UIcon class="text-primary-500" name="i-lucide-earth" />
           Countries Management
         </h1>
         <p class="text-sm text-gray-500">

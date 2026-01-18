@@ -43,6 +43,14 @@
         >
           Criteria Library
         </UButton>
+        <UButton
+          color="neutral"
+          icon="i-lucide-book-open"
+          to="/docs"
+          variant="ghost"
+        >
+          Docs
+        </UButton>
       </nav>
     </div>
   </header>

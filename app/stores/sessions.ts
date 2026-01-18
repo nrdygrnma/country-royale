@@ -34,7 +34,11 @@ export const useSessionsStore = defineStore("sessions", () => {
   const customCountries = ref<Country[]>([]);
   const masterCountries = ref<Country[]>([]);
   const userPresets = ref<CriteriaSet[]>([]);
-  const masterCriteria = ref<Criterion[]>([]);
+  const masterCriteria = ref<Criterion[]>(
+    import.meta.server
+      ? PRESET_CRITERIA.map((pc) => ({ ...pc, id: makeId() }))
+      : [],
+  );
   const masterCategories = ref<string[]>([]);
 
   const activeSession = computed(
@@ -414,10 +418,10 @@ export const useSessionsStore = defineStore("sessions", () => {
       }));
     } else {
       // Sync preset changes to master criteria (e.g. if a preset changed from manual to auto)
+      const existingCriteria = [...data.masterCriteria];
+
       PRESET_CRITERIA.forEach((pc) => {
-        const existing = data.masterCriteria?.find(
-          (mc) => mc.label === pc.label,
-        );
+        const existing = existingCriteria.find((mc) => mc.label === pc.label);
         if (existing) {
           // Update mode and sourceKey if they changed in presets
           if (pc.mode && existing.mode !== pc.mode) {
@@ -426,9 +430,19 @@ export const useSessionsStore = defineStore("sessions", () => {
           if (pc.sourceKey && existing.sourceKey !== pc.sourceKey) {
             existing.sourceKey = pc.sourceKey;
           }
+          // Also sync category if it's defined in preset but not in existing (or if it changed and we want to enforce it)
+          if (pc.category && existing.category !== pc.category) {
+            existing.category = pc.category;
+          }
+        } else {
+          // Add missing preset criteria to the library
+          existingCriteria.push({
+            ...pc,
+            id: makeId(),
+          });
         }
       });
-      masterCriteria.value = data.masterCriteria;
+      masterCriteria.value = existingCriteria;
     }
 
     if (!data.masterCategories || data.masterCategories.length === 0) {
