@@ -43,7 +43,8 @@ export const worldbankProvider: DataProvider = {
 
       const results: FetchResult[] = await Promise.all(
         countries.map(async (code) => {
-          let dataPoint = resultsMap.get(code);
+          let dataPoint: { value: number; year: string } | null | undefined =
+            resultsMap.get(code);
 
           // If value is exactly null or undefined, try individual fetch as fallback
           if (
@@ -67,10 +68,8 @@ export const worldbankProvider: DataProvider = {
             year = fb.year;
             // Final fallback: use Internet Usage if Broadband still missing
             if (value === 0 || value === null) {
-              const net = await fetchIndividualIndicator(
-                code,
-                "IT.NET.USER.ZS",
-              );
+              const net: { value: number; year: string } | null =
+                await fetchIndividualIndicator(code, "IT.NET.USER.ZS");
               value = net?.value ?? 0;
               year = net?.year;
             }
@@ -94,7 +93,8 @@ export const worldbankProvider: DataProvider = {
       // On batch failure, fall back to individual requests for each country
       return Promise.all(
         countries.map(async (code) => {
-          let dataPoint = await fetchIndividualIndicator(code, indicator);
+          let dataPoint: { value: number; year: string } | null =
+            await fetchIndividualIndicator(code, indicator);
           let value = dataPoint?.value ?? null;
           let year = dataPoint?.year;
 
@@ -107,10 +107,8 @@ export const worldbankProvider: DataProvider = {
             year = fb.year;
             // Final fallback: use Internet Usage if Broadband still missing
             if (value === 0 || value === null) {
-              const net = await fetchIndividualIndicator(
-                code,
-                "IT.NET.USER.ZS",
-              );
+              const net: { value: number; year: string } | null =
+                await fetchIndividualIndicator(code, "IT.NET.USER.ZS");
               value = net?.value ?? 0;
               year = net?.year;
             }
