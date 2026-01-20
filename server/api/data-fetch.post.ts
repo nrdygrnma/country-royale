@@ -1,4 +1,4 @@
-import { providers } from "../utils/providers";
+import { providers } from "../utils/providers/index";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);

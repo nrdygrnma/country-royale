@@ -8,7 +8,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.82",
@@ -25,8 +26,14 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.12.1",
+    "@playwright/test": "^1.57.0",
+    "@types/jest": "^30.0.0",
     "eslint": "^9.39.2",
+    "jest": "^30.2.0",
+    "jest-environment-node": "^30.2.0",
+    "playwright": "^1.57.0",
     "prettier": "^3.8.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.2.1"
   },
