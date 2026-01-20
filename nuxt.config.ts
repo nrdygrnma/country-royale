@@ -10,6 +10,11 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
   css: ["~/assets/css/main.css"],
+  runtimeConfig: {
+    public: {
+      unsplashClientId: process.env.UNSPLASH_CLIENT_ID,
+    },
+  },
 
   routeRules: {
     "/": { prerender: true },

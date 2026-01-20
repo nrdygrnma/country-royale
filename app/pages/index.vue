@@ -12,7 +12,7 @@
           ]"
         >
           <img
-            :src="`https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=60&w=1200&auto=format&fit=crop&client_id=${UNSPLASH_CLIENT_ID}`"
+            :src="`https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=60&w=1200&auto=format&fit=crop&client_id=${config.public.unsplashClientId}`"
             alt=""
             class="absolute inset-0 h-full w-full object-cover opacity-20 mix-blend-overlay"
             @error="(e: any) => (e.target.style.display = 'none')"
@@ -287,10 +287,11 @@
 </template>
 
 <script lang="ts" setup>
-import { fetchCountryImage, UNSPLASH_CLIENT_ID } from "~/utils/unsplash";
+import { fetchCountryImage } from "~/utils/unsplash";
 
 const store = useSessionsStore();
 const router = useRouter();
+const config = useRuntimeConfig();
 const isHydrated = ref(false);
 
 const title = ref("");
@@ -320,6 +321,7 @@ const getSessionImage = (session: any) => {
 
     // We trigger the fetch in the background and update the session store
     if (import.meta.client) {
+      console.log(`Fetching image for country: ${name}`);
       fetchCountryImage(name).then((imageData) => {
         if (imageData) {
           store.sessions = store.sessions.map((s) =>
@@ -336,7 +338,6 @@ const getSessionImage = (session: any) => {
     }
   }
 
-  // Use a stable, lower-res default image for better performance
   return `https://images.unsplash.com/photo-1546948630-1149ea60dc86?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`;
 };
 

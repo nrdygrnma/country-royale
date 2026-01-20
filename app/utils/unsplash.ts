@@ -1,5 +1,3 @@
-export const UNSPLASH_CLIENT_ID = "ns1IDRUHINSoeyDxTbjDwMTvdyBfLVqWR1YqA31Wi68";
-
 export interface UnsplashImage {
   url: string;
   attribution: string;
@@ -8,8 +6,11 @@ export interface UnsplashImage {
 export async function fetchCountryImage(
   countryName: string,
 ): Promise<UnsplashImage | null> {
+  const config = useRuntimeConfig();
+  const clientId = config.public.unsplashClientId;
+
   const query = encodeURIComponent(countryName);
-  const url = `https://api.unsplash.com/search/photos?client_id=${UNSPLASH_CLIENT_ID}&query=${query}`;
+  const url = `https://api.unsplash.com/search/photos?client_id=${clientId}&query=${query}`;
 
   try {
     const response = await fetch(url);
