@@ -5,7 +5,7 @@ export const worldbankProvider: DataProvider = {
   async fetch(countries, sourceKey): Promise<FetchResult[]> {
     const indicator = getIndicator(sourceKey);
     if (!indicator) {
-      return countries.map((code) => ({ countryCode: code, rawValue: 0 }));
+      return countries.map((code) => ({ countryCode: code, rawValue: null }));
     }
 
     // World Bank API allows multiple countries separated by semicolon: /country/code1;code2;code3/indicator/...
@@ -30,7 +30,10 @@ export const worldbankProvider: DataProvider = {
       }
 
       const data = JSON.parse(cleanText);
-      const resultsMap = new Map<string, { value: number; year: string }>();
+      const resultsMap = new Map<
+        string,
+        { value: number | null; year: string }
+      >();
 
       if (data && data[1]) {
         data[1].forEach((item: any) => {
@@ -43,8 +46,10 @@ export const worldbankProvider: DataProvider = {
 
       const results: FetchResult[] = await Promise.all(
         countries.map(async (code) => {
-          let dataPoint: { value: number; year: string } | null | undefined =
-            resultsMap.get(code);
+          let dataPoint:
+            | { value: number | null; year: string }
+            | null
+            | undefined = resultsMap.get(code);
 
           // If value is exactly null or undefined, try individual fetch as fallback
           if (
@@ -64,13 +69,13 @@ export const worldbankProvider: DataProvider = {
           ) {
             // Fallback for fixed_broadband if main indicator missing
             const fb = await fetchFixedBroadbandFallback(code);
-            value = fb.value;
+            value = fb.value ?? null;
             year = fb.year;
             // Final fallback: use Internet Usage if Broadband still missing
             if (value === 0 || value === null) {
-              const net: { value: number; year: string } | null =
+              const net: { value: number | null; year: string } | null =
                 await fetchIndividualIndicator(code, "IT.NET.USER.ZS");
-              value = net?.value ?? 0;
+              value = net?.value ?? null;
               year = net?.year;
             }
           } else if (
@@ -79,11 +84,11 @@ export const worldbankProvider: DataProvider = {
           ) {
             // Fallback for doing_business (IC.BUS.NREG)
             const db = await fetchDoingBusinessFallback(code);
-            value = db.value;
+            value = db.value ?? null;
             year = db.year;
           }
 
-          return { countryCode: code, rawValue: value || 0, year };
+          return { countryCode: code, rawValue: value, year };
         }),
       );
 
@@ -93,7 +98,7 @@ export const worldbankProvider: DataProvider = {
       // On batch failure, fall back to individual requests for each country
       return Promise.all(
         countries.map(async (code) => {
-          let dataPoint: { value: number; year: string } | null =
+          let dataPoint: { value: number | null; year: string } | null =
             await fetchIndividualIndicator(code, indicator);
           let value = dataPoint?.value ?? null;
           let year = dataPoint?.year;
@@ -103,13 +108,13 @@ export const worldbankProvider: DataProvider = {
             (value === 0 || value === null)
           ) {
             const fb = await fetchFixedBroadbandFallback(code);
-            value = fb.value;
+            value = fb.value ?? null;
             year = fb.year;
             // Final fallback: use Internet Usage if Broadband still missing
             if (value === 0 || value === null) {
-              const net: { value: number; year: string } | null =
+              const net: { value: number | null; year: string } | null =
                 await fetchIndividualIndicator(code, "IT.NET.USER.ZS");
-              value = net?.value ?? 0;
+              value = net?.value ?? null;
               year = net?.year;
             }
           } else if (
@@ -117,11 +122,11 @@ export const worldbankProvider: DataProvider = {
             (value === 0 || value === null)
           ) {
             const db = await fetchDoingBusinessFallback(code);
-            value = db.value;
+            value = db.value ?? null;
             year = db.year;
           }
 
-          return { countryCode: code, rawValue: value || 0, year };
+          return { countryCode: code, rawValue: value, year };
         }),
       );
     }

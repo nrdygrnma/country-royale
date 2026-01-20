@@ -466,6 +466,21 @@ export const useSessionsStore = defineStore("sessions", () => {
       masterCriteria.value = existingCriteria;
     }
 
+    // Migrate old source keys in existing sessions and master criteria
+    sessions.value.forEach((s) => {
+      s.criteria.forEach((c) => {
+        if (c.sourceKey === "ocindex:crime_index") {
+          c.sourceKey = "local:crime_index";
+        }
+      });
+    });
+
+    masterCriteria.value.forEach((c) => {
+      if (c.sourceKey === "ocindex:crime_index") {
+        c.sourceKey = "local:crime_index";
+      }
+    });
+
     if (!data.masterCategories || data.masterCategories.length === 0) {
       masterCategories.value = [...DEFAULT_CATEGORIES];
     } else {

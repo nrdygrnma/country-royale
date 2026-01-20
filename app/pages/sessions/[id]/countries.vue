@@ -158,7 +158,7 @@
                   your global list of countries in the
                   <NuxtLink
                     class="text-primary-500 hover:underline font-bold"
-                    to="/countries"
+                    to="/admin/countries"
                   >
                     Countries Library </NuxtLink
                   >.

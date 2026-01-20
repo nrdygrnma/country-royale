@@ -10,39 +10,40 @@ visualize the best fit for your unique lifestyle.
   Nomad 2026" vs "Retirement Goals").
 - **Criteria Library**: Manage a global library of criteria with categories. Drag and drop to organize.
 - **Weighted Scoring**: Assign importance (1-10) to each criterion. The app automatically calculates weighted totals.
-- **Dynamic Results**: View your rankings with detailed breakdowns, including:
+- **Detailed Reporting**: View your rankings with detailed breakdowns, including:
   - **Head-to-Head Comparison**: Compare the winner against the runner-up using radar charts.
   - **Strengths & Weaknesses**: Automatically identifies where each country excels or falls short.
   - **Decision Report**: AI-style insights summarizing why a country won and what the trade-offs are.
 - **Printable Reports**: Generate professional PDF reports of your final rankings and analysis to share or save for
   later.
 - **Automated Data Sync**: Fetch real-world statistics (GDP, Stability, Safety, Rule of Law, Internet Quality, etc.)
-  directly
-  from reliable
-  sources like the World Bank, Numbeo, and REST Countries API.
+  directly from reliable sources like the World Bank, Numbeo, and REST Countries API.
+- **Local Data Management**: A dedicated admin panel allows for hardcoding and updating datasets like the Crime Index
+  from external JSON sources, ensuring up-to-date and customizable rankings.
 - **Visual Context**: Automatic fetching of high-quality country images from Unsplash to give each comparison session a
   distinct visual feel.
 - **Local Persistence**: All your data is saved locally in your browser—no account required, total privacy.
 
-## 🔌 API Integrations
+## 🔌 Data Indicators & Sources
 
-Country Royale integrates with several public APIs to provide real-time data and rich media:
+The automated scoring engine uses the following primary indicators from our trusted providers:
 
-- **[Unsplash API](https://unsplash.com/developers)**: Used to fetch beautiful, relevant imagery for countries and
-  sessions.
-- **[World Bank API](https://datahelpdesk.worldbank.org/knowledgebase/topics/125589)**: Provides macro-economic and
-  social indicators like GDP, Political Stability, Rule of Law, and Infrastructure Quality.
-- **[REST Countries](https://restcountries.com/)**: Supplies fundamental country data including flags, languages, and
-  population, as well as heuristic metrics for Visa Ease.
-- **[Numbeo](https://www.numbeo.com/)**: Provides comparative data for Cost of Living and Safety (integrated via stable
-  mirror/proxy).
+| Category       | Indicator                                 | Source          | Direction        |
+|----------------|-------------------------------------------|-----------------|------------------|
+| Economy        | GDP per capita (current US$)              | World Bank      | Higher is better |
+| Safety         | Organized Crime Index (0-10)              | Local / OCIndex | Lower is better  |
+| Health         | Life expectancy at birth (years)          | World Bank      | Higher is better |
+| Stability      | Political Stability & Absence of Violence | World Bank      | Higher is better |
+| Money          | Cost of Living Index                      | Numbeo          | Lower is better  |
+| Legal          | Rule of Law Index                         | World Bank      | Higher is better |
+| Infrastructure | Fixed Broadband per 100 people            | World Bank      | Higher is better |
+| Environment    | Air Pollution (PM2.5) exposure            | World Bank      | Lower is better  |
+| Practicality   | Visa Ease Index (Heuristic)               | RestCountries   | Higher is better |
 
-## 📖 Documentation
+For a complete list of indicators including population, languages, and business metrics, refer to the
+in-app [Documentation Page](https://country-royale.vercel.app/docs).
 
-For a detailed guide on how scoring works, data sources, and FAQs, visit our
-in-app [Documentation Page](https://country-royale.vercel.app/docs) (or navigate to `/docs` in your local instance).
-
-## 🛠 Tech Stack
+### 🛠 Tech Stack
 
 - **Framework**: [Nuxt 4](https://nuxt.com/)
 - **UI Components**: [Nuxt UI v3](https://ui.nuxt.com/v3)

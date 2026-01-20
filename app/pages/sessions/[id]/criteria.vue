@@ -374,7 +374,7 @@
                       color="primary"
                       icon="i-lucide-edit"
                       size="xs"
-                      to="/criteria"
+                      to="/admin/criteria"
                       variant="ghost"
                     >
                       Edit Library

@@ -777,6 +777,27 @@
               </table>
             </div>
 
+            <div
+              v-if="
+                syncData.some(
+                  (d) => d.rawValue === null || d.rawValue === undefined,
+                )
+              "
+              class="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-lg border border-orange-100 dark:border-orange-900/30 flex gap-2 items-start"
+            >
+              <UIcon
+                class="w-4 h-4 text-orange-500 shrink-0 mt-0.5"
+                name="i-lucide-alert-triangle"
+              />
+              <div
+                class="text-[11px] text-orange-800 dark:text-orange-300 leading-tight"
+              >
+                <strong>Missing data:</strong> Some countries are missing data
+                for this indicator. They have been assigned a minimum score of
+                1. You can manually adjust these scores after applying.
+              </div>
+            </div>
+
             <div class="flex flex-col gap-3">
               <div class="text-sm font-semibold">
                 What would you like to do?
@@ -805,8 +826,10 @@
         </div>
 
         <template #footer>
-          <div class="flex justify-between items-center w-full">
-            <div class="flex gap-2">
+          <div
+            class="flex justify-between items-center w-full gap-4 min-h-[44px]"
+          >
+            <div class="flex gap-2 shrink-0">
               <UButton
                 color="neutral"
                 size="sm"
@@ -820,6 +843,7 @@
                   syncStatus === 'explaining' || syncStatus === 'questioning'
                 "
                 :loading="isSyncing"
+                class="whitespace-nowrap"
                 color="primary"
                 icon="i-lucide-refresh-cw"
                 size="sm"
@@ -831,13 +855,16 @@
             </div>
             <div
               v-if="syncStatus === 'explaining'"
-              class="text-[10px] text-gray-400"
+              class="text-[10px] text-gray-400 text-right leading-tight"
             >
               Scored via
-              {{
-                DATA_SOURCES.find((s) => s.value === activeCriterion?.sourceKey)
-                  ?.label
-              }}
+              <span class="block font-medium text-gray-500">
+                {{
+                  DATA_SOURCES.find(
+                    (s) => s.value === activeCriterion?.sourceKey,
+                  )?.label
+                }}
+              </span>
             </div>
           </div>
         </template>
@@ -1014,7 +1041,7 @@ const getInterpretation = computed(() => {
   if (sourceKey === "numbeo:cost_of_living") {
     return `Based on Numbeo's Cost of Living Index. Higher index means more expensive daily life. Scores are normalized against ${modeText}.`;
   }
-  if (sourceKey === "numbeo:crime_index") {
+  if (sourceKey === "numbeo:crime_index" || sourceKey === "local:crime_index") {
     return `Lower crime index indicates a safer environment. Scores are calculated against ${modeText} so that countries with lower indices receive higher safety scores (based on your "${activeCriterion.value.direction}" setting).`;
   }
   if (
@@ -1108,18 +1135,24 @@ const syncCurrentCriterion = async () => {
       if (isInteractive) {
         syncStatus.value = "questioning";
       } else {
-        // 1. Map raw values to scores
+        const rawValues = response.data
+          .map((d: any) => d.rawValue)
+          .filter((v: any) => v !== null && v !== undefined);
+
         const sourceDef = DATA_SOURCES.find(
           (s) => s.value === activeCriterion.value?.sourceKey,
         );
 
-        const rawValues = response.data.map((d: any) => d.rawValue);
         const min = sourceDef?.min ?? Math.min(...rawValues);
         const max = sourceDef?.max ?? Math.max(...rawValues);
 
         syncData.value = syncData.value.map((d: any) => {
           let score = 5;
-          if (max !== min) {
+
+          if (d.rawValue === null || d.rawValue === undefined) {
+            // No data available for this country
+            score = 1; // Minimum score for missing data
+          } else if (max !== min) {
             // Clamp rawValue to min/max to ensure normalization stays within [0, 1]
             const clampedValue = Math.max(min, Math.min(max, d.rawValue));
             const normalized = (clampedValue - min) / (max - min);

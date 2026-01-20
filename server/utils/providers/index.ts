@@ -1,7 +1,7 @@
 import { worldbankProvider } from "./worldbank";
 import { restcountriesProvider } from "./restcountries";
 import { numbeoProvider } from "./numbeo";
-import { ocindexProvider } from "~~/server/utils/providers/ocindex";
+import { localProvider } from "~~/server/utils/providers/local";
 
 export interface FetchResult {
   countryCode: string;
@@ -34,3 +34,4 @@ registerProvider(worldbankProvider);
 registerProvider(restcountriesProvider);
 registerProvider(numbeoProvider);
 registerProvider(ocindexProvider);
+registerProvider(localProvider);

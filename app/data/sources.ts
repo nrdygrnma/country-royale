@@ -64,6 +64,14 @@ export const DATA_SOURCES: DataSource[] = [
     max: 120,
   },
   {
+    label: "Local: Crime Index",
+    value: "local:crime_index",
+    description:
+      "Crime index based on the Organized Crime Index (0-10, lower is better). Data can be updated in the Admin panel.",
+    min: 1,
+    max: 10,
+  },
+  {
     label: "Numbeo: Crime Index",
     value: "numbeo:crime_index",
     description:

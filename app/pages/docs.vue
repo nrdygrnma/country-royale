@@ -10,7 +10,6 @@
       </p>
     </section>
 
-    <!-- Navigation -->
     <nav class="flex flex-wrap justify-center gap-4 no-print">
       <UButton
         v-for="section in sections"
@@ -57,39 +56,176 @@
         </div>
       </DocsSection>
 
-      <!-- Automated Data -->
+      <!-- Automated Data & Sources -->
       <DocsSection
-        id="automation"
+        id="data-sources"
         icon="i-lucide-database"
-        title="Automated Data Sync"
+        title="Automated Data & Sources"
       >
         <p>
           Stop manual research. We fetch real-time data from global
           organizations to ensure your decisions are based on the latest
-          statistics.
+          statistics. Each automated criterion is backed by a specific data
+          indicator from one of our trusted providers.
         </p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
-          <DocsCard
-            description="GDP, Stability, Internet Quality, Education, Taxes, and Rule of Law."
-            icon="i-lucide-landmark"
-            title="World Bank"
-          />
-          <DocsCard
-            description="Visa Ease, Population statistics, Official Languages, and Timezones."
-            icon="i-lucide-globe"
-            title="REST Countries"
-          />
-          <DocsCard
-            description="Comparative Cost of Living and Safety/Crime Index data."
-            icon="i-lucide-trending-up"
-            title="Numbeo"
-          />
-          <DocsCard
-            description="High-quality photography for visual context and session covers."
-            icon="i-lucide-image"
-            title="Unsplash"
-          />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+          <div
+            class="p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <UIcon
+                class="w-5 h-5 text-primary-500"
+                name="i-lucide-landmark"
+              />
+              <span class="font-bold text-sm text-gray-900 dark:text-white"
+                >World Bank</span
+              >
+            </div>
+            <p class="text-xs text-gray-500 leading-tight">
+              GDP, Stability, Internet Quality, Education, and Rule of Law.
+            </p>
+          </div>
+          <div
+            class="p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <UIcon class="w-5 h-5 text-primary-500" name="i-lucide-globe" />
+              <span class="font-bold text-sm text-gray-900 dark:text-white"
+                >REST Countries</span
+              >
+            </div>
+            <p class="text-xs text-gray-500 leading-tight">
+              Visa Ease, Population, Languages, and Timezones.
+            </p>
+          </div>
+          <div
+            class="p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <UIcon
+                class="w-5 h-5 text-primary-500"
+                name="i-lucide-trending-up"
+              />
+              <span class="font-bold text-sm text-gray-900 dark:text-white"
+                >Numbeo</span
+              >
+            </div>
+            <p class="text-xs text-gray-500 leading-tight">
+              Comparative Cost of Living and Safety data.
+            </p>
+          </div>
+          <div
+            class="p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <UIcon class="w-5 h-5 text-primary-500" name="i-lucide-image" />
+              <span class="font-bold text-sm text-gray-900 dark:text-white"
+                >Unsplash</span
+              >
+            </div>
+            <p class="text-xs text-gray-500 leading-tight">
+              High-quality photography for visual context.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="mt-8 overflow-hidden border border-gray-200 dark:border-gray-800 rounded-xl"
+        >
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr
+                class="text-[10px] font-bold uppercase text-gray-400 tracking-widest border-b border-gray-200 dark:border-gray-800"
+              >
+                <th class="p-3">Criterion</th>
+                <th class="p-3">Source & Indicator</th>
+                <th class="p-3">Logic</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Economic Strength</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  NY.GDP.PCAP.CD (GDP per capita)
+                </td>
+                <td class="p-3 text-gray-500">Higher is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Safety (Crime Index)</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >Local / OCIndex</span
+                  >
+                  Organized Crime Index (1-10)
+                </td>
+                <td class="p-3 text-gray-500">Lower is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Healthcare Quality</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  SP.DYN.LE00.IN (Life Expectancy)
+                </td>
+                <td class="p-3 text-gray-500">Higher is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Political Stability</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  PV.EST (Political Stability Index)
+                </td>
+                <td class="p-3 text-gray-500">Higher is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Cost of Living</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >Numbeo</span
+                  >
+                  Cost of Living Index
+                </td>
+                <td class="p-3 text-gray-500">Lower is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Internet Quality</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  IT.NET.BBND.P2 (Fixed Broadband)
+                </td>
+                <td class="p-3 text-gray-500">Higher is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Air Quality</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  EN.ATM.PM25.MC.M3 (PM2.5 exposure)
+                </td>
+                <td class="p-3 text-gray-500">Lower is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Rule of Law</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  RL.EST (Rule of Law Index)
+                </td>
+                <td class="p-3 text-gray-500">Higher is better</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <p class="text-sm text-gray-500 italic mt-6">
@@ -185,7 +321,7 @@
 <script lang="ts" setup>
 const sections = [
   { id: "getting-started", title: "Start", icon: "i-lucide-rocket" },
-  { id: "automation", title: "Automation", icon: "i-lucide-database" },
+  { id: "data-sources", title: "Data & Sources", icon: "i-lucide-database" },
   { id: "scoring", title: "Scoring", icon: "i-lucide-calculator" },
   { id: "reporting", title: "Reporting", icon: "i-lucide-file-text" },
   { id: "faq", title: "FAQ", icon: "i-lucide-help-circle" },

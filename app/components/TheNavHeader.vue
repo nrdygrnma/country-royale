@@ -33,7 +33,9 @@
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const items = ref<NavigationMenuItem[]>([
+const route = useRoute();
+
+const items = computed<NavigationMenuItem[]>(() => [
   {
     label: "Home",
     icon: "i-lucide-home",
@@ -47,6 +49,7 @@ const items = ref<NavigationMenuItem[]>([
   {
     label: "Admin",
     icon: "i-lucide-settings",
+    active: route.path.startsWith("/admin"),
     children: [
       {
         label: "Countries",
