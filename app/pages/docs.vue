@@ -80,11 +80,13 @@
           >
             <li class="flex items-center gap-2 text-sm">
               <UIcon class="text-green-500" name="i-lucide-check" />
-              <strong>World Bank:</strong> GDP, Taxes, Stability, Rights
+              <strong>World Bank:</strong> GDP, Stability, Internet, Education,
+              Taxes, Rule of Law
             </li>
             <li class="flex items-center gap-2 text-sm">
               <UIcon class="text-green-500" name="i-lucide-check" />
-              <strong>REST Countries:</strong> Visa Ease, Flags, Languages
+              <strong>REST Countries:</strong> Visa Ease, Population, Languages,
+              Timezones
             </li>
             <li class="flex items-center gap-2 text-sm">
               <UIcon class="text-green-500" name="i-lucide-check" />
