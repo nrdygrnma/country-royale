@@ -170,6 +170,7 @@ export const useSessionsStore = defineStore("sessions", () => {
     criterionId: string,
     score: number,
     rawValue?: string | number,
+    year?: string | number,
   ) => {
     if (!activeSession.value) return;
     const nextScore: CountryScore = {
@@ -177,6 +178,7 @@ export const useSessionsStore = defineStore("sessions", () => {
       criterionId,
       score: clamp(score, 1, 10),
       rawValue,
+      year,
     };
 
     const idx = activeSession.value.scores.findIndex(

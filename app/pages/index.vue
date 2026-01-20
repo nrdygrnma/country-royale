@@ -5,7 +5,7 @@
         <!-- Hero Section -->
         <div
           :class="[
-            'relative overflow-hidden transition-all duration-700 bg-gray-900',
+            'relative overflow-hidden transition-all duration-700 bg-gray-900 ',
             store.sessions.length === 0
               ? 'rounded-3xl px-6 py-20 shadow-2xl sm:px-12 sm:py-32 lg:px-20'
               : 'rounded-2xl p-6 shadow-xl sm:px-8 sm:py-10',
@@ -14,7 +14,7 @@
           <img
             :src="`https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=60&w=1200&auto=format&fit=crop&client_id=${config.public.unsplashClientId}`"
             alt=""
-            class="absolute inset-0 h-full w-full object-cover opacity-20 mix-blend-overlay"
+            class="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay backdrop-contrast-50"
             @error="(e: any) => (e.target.style.display = 'none')"
           />
           <div :class="['relative mx-auto max-w-2xl text-center']">

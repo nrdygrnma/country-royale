@@ -1206,6 +1206,7 @@ const viewStoredData = () => {
       countryName: codeToName.value.get(code) || code,
       rawValue: scoreObj?.rawValue,
       calculatedScore: scoreObj?.score || 5,
+      year: scoreObj?.year,
     };
   });
 
@@ -1270,6 +1271,7 @@ const applySyncedData = () => {
       activeCriterion.value!.id,
       d.calculatedScore,
       d.rawValue,
+      d.year,
     );
   });
 

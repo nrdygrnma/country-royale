@@ -21,6 +21,7 @@ export interface CountryScore {
   criterionId: string;
   score: number;
   rawValue?: string | number;
+  year?: string | number;
 }
 
 export interface ComparisonSession {

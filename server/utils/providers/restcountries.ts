@@ -31,7 +31,7 @@ export const restcountriesProvider: DataProvider = {
         return {
           countryCode: code,
           rawValue: value,
-          year: sourceKey === "population" ? 2023 : undefined,
+          year: sourceKey === "population" ? 2023 : 2024,
         };
       }),
     );

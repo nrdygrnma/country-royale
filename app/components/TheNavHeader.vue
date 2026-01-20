@@ -25,6 +25,7 @@
 
       <nav class="flex items-center gap-4">
         <UNavigationMenu :items="items" arrow content-orientation="vertical" />
+        <UColorModeButton />
       </nav>
     </div>
   </header>

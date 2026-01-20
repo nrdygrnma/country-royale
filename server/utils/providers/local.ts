@@ -19,6 +19,7 @@ export const localProvider: DataProvider = {
     return countries.map((code) => ({
       countryCode: code,
       rawValue: 0,
+      year: 2025,
     }));
   },
 };
