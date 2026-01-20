@@ -24,7 +24,12 @@
       </NuxtLink>
 
       <nav class="flex items-center gap-4">
-        <UNavigationMenu :items="items" arrow content-orientation="vertical" />
+        <UNavigationMenu
+          :disable-pointer-leave-close="true"
+          :items="items"
+          arrow
+          content-orientation="vertical"
+        />
         <UColorModeButton />
       </nav>
     </div>
@@ -56,6 +61,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         label: "Countries",
         icon: "i-lucide-earth",
         to: "/admin/countries",
+        "data-testId": "admin-countries-link",
       },
       {
         label: "Criteria Library",

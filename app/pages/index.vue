@@ -25,6 +25,7 @@
                   ? 'text-3xl sm:text-4xl'
                   : 'text-xl sm:text-2xl',
               ]"
+              data-testId="hero-header"
             >
               Discover your perfect match.
             </h2>

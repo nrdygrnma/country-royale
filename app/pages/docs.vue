@@ -2,9 +2,12 @@
   <div class="space-y-12 max-w-4xl mx-auto py-10 px-4">
     <!-- Header -->
     <section class="text-center space-y-4">
-      <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white">
+      <h2
+        class="text-4xl font-extrabold text-gray-900 dark:text-white"
+        data-testId="docs-header"
+      >
         Documentation
-      </h1>
+      </h2>
       <p class="text-xl text-gray-500">
         Everything you need to know about Country Royale
       </p>

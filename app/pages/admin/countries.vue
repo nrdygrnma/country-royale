@@ -6,6 +6,7 @@
       <div class="flex-1">
         <h1
           class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
+          data-testId="countries-header"
         >
           <UIcon class="text-primary-500" name="i-lucide-earth" />
           Countries Management

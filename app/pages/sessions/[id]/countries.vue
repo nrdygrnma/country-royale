@@ -6,6 +6,7 @@
       <div class="space-y-0.5">
         <h1
           class="text-lg font-bold text-gray-900 dark:text-white leading-none"
+          data-testId="session-countries-header"
         >
           Pick countries
         </h1>

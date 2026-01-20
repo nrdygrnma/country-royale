@@ -6,6 +6,7 @@
       <div class="space-y-0.5">
         <h1
           class="text-lg font-bold text-gray-900 dark:text-white leading-none"
+          data-testId="session-criteria-header"
         >
           Define criteria
         </h1>
@@ -539,7 +540,11 @@
 </template>
 
 <script lang="ts" setup>
-import { CRITERIA_SETS, type CriteriaSet, type PresetCriterion } from "~/data/criteria";
+import {
+  CRITERIA_SETS,
+  type CriteriaSet,
+  type PresetCriterion,
+} from "~/data/criteria";
 
 const toast = useToast();
 const store = useSessionsStore();
