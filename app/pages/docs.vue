@@ -68,37 +68,31 @@
           organizations to ensure your decisions are based on the latest
           statistics.
         </p>
-        <div
-          class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800"
-        >
-          <h4 class="font-bold mb-4 flex items-center gap-2">
-            <UIcon class="text-primary-500" name="i-lucide-link" />
-            Integrated Sources
-          </h4>
-          <ul
-            class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 list-none p-0"
-          >
-            <li class="flex items-center gap-2 text-sm">
-              <UIcon class="text-green-500" name="i-lucide-check" />
-              <strong>World Bank:</strong> GDP, Stability, Internet, Education,
-              Taxes, Rule of Law
-            </li>
-            <li class="flex items-center gap-2 text-sm">
-              <UIcon class="text-green-500" name="i-lucide-check" />
-              <strong>REST Countries:</strong> Visa Ease, Population, Languages,
-              Timezones
-            </li>
-            <li class="flex items-center gap-2 text-sm">
-              <UIcon class="text-green-500" name="i-lucide-check" />
-              <strong>Numbeo:</strong> Cost of Living, Crime Index
-            </li>
-            <li class="flex items-center gap-2 text-sm">
-              <UIcon class="text-green-500" name="i-lucide-check" />
-              <strong>Unsplash:</strong> High-quality visual context
-            </li>
-          </ul>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
+          <DocsCard
+            description="GDP, Stability, Internet Quality, Education, Taxes, and Rule of Law."
+            icon="i-lucide-landmark"
+            title="World Bank"
+          />
+          <DocsCard
+            description="Visa Ease, Population statistics, Official Languages, and Timezones."
+            icon="i-lucide-globe"
+            title="REST Countries"
+          />
+          <DocsCard
+            description="Comparative Cost of Living and Safety/Crime Index data."
+            icon="i-lucide-trending-up"
+            title="Numbeo"
+          />
+          <DocsCard
+            description="High-quality photography for visual context and session covers."
+            icon="i-lucide-image"
+            title="Unsplash"
+          />
         </div>
-        <p class="text-sm text-gray-500 italic">
+
+        <p class="text-sm text-gray-500 italic mt-6">
           Note: For data points like languages or timezones, the app might ask
           you a quick follow-up question to calculate a personalized score
           (e.g., "What is your base timezone?").
