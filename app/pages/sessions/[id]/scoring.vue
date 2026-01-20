@@ -737,6 +737,7 @@
                   >
                     <th class="p-3">Country</th>
                     <th class="p-3">Raw Value</th>
+                    <th class="p-3">Year</th>
                     <th class="p-3 text-right">Calculated Score</th>
                   </tr>
                 </thead>
@@ -751,6 +752,9 @@
                       {{
                         formatRawValue(d.rawValue, activeCriterion?.sourceKey)
                       }}
+                    </td>
+                    <td class="p-3 text-gray-400 text-xs tabular-nums">
+                      {{ d.year || "—" }}
                     </td>
                     <td class="p-3 text-right">
                       <UBadge

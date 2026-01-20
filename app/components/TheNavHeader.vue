@@ -24,36 +24,41 @@
       </NuxtLink>
 
       <nav class="flex items-center gap-4">
-        <UButton color="neutral" icon="i-lucide-home" to="/" variant="ghost">
-          Home
-        </UButton>
-        <UButton
-          color="neutral"
-          icon="i-lucide-earth"
-          to="/countries"
-          variant="ghost"
-        >
-          Countries
-        </UButton>
-        <UButton
-          color="neutral"
-          icon="i-lucide-library"
-          to="/criteria"
-          variant="ghost"
-        >
-          Criteria Library
-        </UButton>
-        <UButton
-          color="neutral"
-          icon="i-lucide-book-open"
-          to="/docs"
-          variant="ghost"
-        >
-          Docs
-        </UButton>
+        <UNavigationMenu :items="items" arrow content-orientation="vertical" />
       </nav>
     </div>
   </header>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import type { NavigationMenuItem } from "@nuxt/ui";
+
+const items = ref<NavigationMenuItem[]>([
+  {
+    label: "Home",
+    icon: "i-lucide-home",
+    to: "/",
+  },
+  {
+    label: "Docs",
+    icon: "i-lucide-book-open",
+    to: "/docs",
+  },
+  {
+    label: "Admin",
+    icon: "i-lucide-settings",
+    children: [
+      {
+        label: "Countries",
+        icon: "i-lucide-earth",
+        to: "/admin/countries",
+      },
+      {
+        label: "Criteria Library",
+        icon: "i-lucide-library",
+        to: "/admin/criteria",
+      },
+    ],
+  },
+]);
+</script>

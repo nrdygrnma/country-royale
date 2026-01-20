@@ -396,6 +396,15 @@ export const useSessionsStore = defineStore("sessions", () => {
     activeSessionId.value = null;
   };
 
+  const resetMasterCriteriaToDefaults = () => {
+    masterCriteria.value = PRESET_CRITERIA.map((pc) => ({
+      ...pc,
+      id: makeId(),
+    }));
+    masterCategories.value = [...DEFAULT_CATEGORIES];
+    saveToStorage();
+  };
+
   const bootstrapFromPersisted = (data: {
     sessions: ComparisonSession[];
     customCountries: Country[];
@@ -429,6 +438,18 @@ export const useSessionsStore = defineStore("sessions", () => {
           }
           if (pc.sourceKey && existing.sourceKey !== pc.sourceKey) {
             existing.sourceKey = pc.sourceKey;
+          }
+          // Sync description
+          if (pc.description && existing.description !== pc.description) {
+            existing.description = pc.description;
+          }
+          // Sync direction
+          if (pc.direction && existing.direction !== pc.direction) {
+            existing.direction = pc.direction;
+          }
+          // Sync weight (optional, but good for defaults)
+          if (pc.weight && existing.weight !== pc.weight) {
+            existing.weight = pc.weight;
           }
           // Also sync category if it's defined in preset but not in existing (or if it changed and we want to enforce it)
           if (pc.category && existing.category !== pc.category) {
@@ -499,6 +520,7 @@ export const useSessionsStore = defineStore("sessions", () => {
     setCountryNote,
     clearCountryNote,
     clearAllSessions,
+    resetMasterCriteriaToDefaults,
     bootstrapFromPersisted,
     upsertMasterCriterion,
     deleteMasterCriterion,

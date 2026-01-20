@@ -621,6 +621,10 @@ const confirmApplyPreset = () => {
       );
 
       return {
+        description: c.description || master?.description || "",
+        weight: c.weight,
+        direction: c.direction || master?.direction || "higher-is-better",
+        category: c.category || master?.category,
         ...c,
         id: crypto.randomUUID(),
         mode:

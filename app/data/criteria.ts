@@ -52,8 +52,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "lower-is-better",
     category: "Money",
-    mode: "auto",
-    sourceKey: "worldbank:tax_revenue",
   },
   {
     label: "Cost of living",
@@ -70,8 +68,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "higher-is-better",
     category: "Money",
-    mode: "manual",
-    sourceKey: "",
   },
   {
     label: "Bitcoin / Crypto friendly",
@@ -79,8 +75,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 5,
     direction: "higher-is-better",
     category: "Money",
-    mode: "manual",
-    sourceKey: "",
   },
 
   // Work & Opportunity
@@ -90,8 +84,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 6,
     direction: "higher-is-better",
     category: "Work & Opportunity",
-    mode: "auto",
-    sourceKey: "worldbank:gdp",
   },
   {
     label: "Business opportunities",
@@ -99,8 +91,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "higher-is-better",
     category: "Work & Opportunity",
-    mode: "auto",
-    sourceKey: "worldbank:doing_business",
   },
 
   // Infrastructure & Practicalities
@@ -110,8 +100,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "higher-is-better",
     category: "Infrastructure & Practicalities",
-    mode: "manual",
-    sourceKey: "",
   },
   {
     label: "Infrastructure",
@@ -146,8 +134,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 6,
     direction: "higher-is-better",
     category: "Infrastructure & Practicalities",
-    mode: "manual",
-    sourceKey: "",
   },
   {
     label: "Time zone fit",
@@ -175,8 +161,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 6,
     direction: "higher-is-better",
     category: "Lifestyle & Social",
-    mode: "manual",
-    sourceKey: "",
   },
   {
     label: "Expat / community",
@@ -193,8 +177,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 5,
     direction: "higher-is-better",
     category: "Lifestyle & Social",
-    mode: "manual",
-    sourceKey: "",
   },
 
   // Health & Environment
@@ -252,7 +234,7 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     direction: "higher-is-better",
     category: "Risk",
     mode: "auto",
-    sourceKey: "numbeo:crime_index",
+    sourceKey: "ocindex:crime_index",
   },
   {
     label: "Political stability",
@@ -260,7 +242,6 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
     weight: 7,
     direction: "higher-is-better",
     category: "Risk",
-    mode: "auto",
     sourceKey: "worldbank:political_stability",
   },
   {
@@ -301,7 +282,7 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         weight: 7,
         direction: "higher-is-better",
         mode: "auto",
-        sourceKey: "numbeo:crime_index",
+        sourceKey: "ocindex:crime_index",
       },
       {
         label: "Visa / residency ease",
@@ -316,8 +297,6 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         description: "Foreign source income treatment",
         weight: 7,
         direction: "lower-is-better",
-        mode: "auto",
-        sourceKey: "worldbank:tax_revenue",
       },
       {
         label: "Expat / community",
@@ -347,7 +326,7 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         weight: 10,
         direction: "higher-is-better",
         mode: "auto",
-        sourceKey: "numbeo:crime_index",
+        sourceKey: "ocindex:crime_index",
       },
       {
         label: "Healthcare quality",
@@ -386,7 +365,6 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         description: "Low unrest, predictable governance",
         weight: 8,
         direction: "higher-is-better",
-        mode: "auto",
         sourceKey: "worldbank:political_stability",
       },
     ],
@@ -400,8 +378,6 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         description: "Overall tax burden (incl. capital gains where relevant)",
         weight: 10,
         direction: "lower-is-better",
-        mode: "auto",
-        sourceKey: "worldbank:tax_revenue",
       },
       {
         label: "Bitcoin / Crypto friendly",
@@ -414,7 +390,6 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         description: "Low unrest, predictable governance",
         weight: 8,
         direction: "higher-is-better",
-        mode: "auto",
         sourceKey: "worldbank:political_stability",
       },
       {
@@ -422,8 +397,6 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         description: "Ownership security and legal reliability",
         weight: 8,
         direction: "higher-is-better",
-        mode: "auto",
-        sourceKey: "worldbank:rule_of_law",
       },
       {
         label: "Visa / residency ease",
@@ -469,7 +442,7 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         weight: 8,
         direction: "higher-is-better",
         mode: "auto",
-        sourceKey: "numbeo:crime_index",
+        sourceKey: "ocindex:crime_index",
       },
       {
         label: "Natural disaster risk",
@@ -498,8 +471,6 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         description: "Low overall tax burden",
         weight: 9,
         direction: "lower-is-better",
-        mode: "auto",
-        sourceKey: "worldbank:tax_revenue",
       },
       {
         label: "Visa / residency ease",
@@ -515,7 +486,7 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         weight: 7,
         direction: "higher-is-better",
         mode: "auto",
-        sourceKey: "numbeo:crime_index",
+        sourceKey: "ocindex:crime_index",
       },
       {
         label: "Internet quality",
@@ -536,24 +507,18 @@ export const CRITERIA_SETS: CriteriaSet[] = [
         description: "New business density and investment climate",
         weight: 10,
         direction: "higher-is-better",
-        mode: "auto",
-        sourceKey: "worldbank:doing_business",
       },
       {
         label: "Property rights",
         description: "Ownership security and legal reliability",
         weight: 9,
         direction: "higher-is-better",
-        mode: "auto",
-        sourceKey: "worldbank:rule_of_law",
       },
       {
         label: "Taxes",
         description: "Overall tax burden",
         weight: 8,
         direction: "lower-is-better",
-        mode: "auto",
-        sourceKey: "worldbank:tax_revenue",
       },
       {
         label: "Internet quality",
