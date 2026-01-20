@@ -17,6 +17,7 @@ export interface DriverInsight {
   direction: "higher-is-better" | "lower-is-better";
   winnerRaw: number;
   runnerUpRaw: number;
+  scoreDelta: number; // raw difference (winner - runner-up)
   // positive = helped winner vs runner-up, negative = helped runner-up
   deltaContribution: number;
 }
@@ -38,10 +39,11 @@ const getRawScoreOrDefault = (
 
 const normalizedAdjusted = (
   rawScore: number,
-  direction: "higher-is-better" | "lower-is-better",
+  _direction: "higher-is-better" | "lower-is-better",
 ) => {
-  const norm = clamp(rawScore, 1, 10) / 10;
-  return direction === "higher-is-better" ? norm : 1.1 - norm;
+  // Same fix as in scoring.ts: input is already a 1-10 goodness score
+  const norm = (clamp(rawScore, 1, 10) - 1) / 9;
+  return norm;
 };
 
 export const getMarginInsight = (
@@ -90,6 +92,7 @@ export const getTopDrivers = (
     const rAdj = normalizedAdjusted(rRaw, c.direction);
 
     const deltaContribution = (wAdj - rAdj) * c.weight;
+    const scoreDelta = wRaw - rRaw;
 
     return {
       criterionId: c.id,
@@ -98,6 +101,7 @@ export const getTopDrivers = (
       direction: c.direction,
       winnerRaw: wRaw,
       runnerUpRaw: rRaw,
+      scoreDelta,
       deltaContribution,
     };
   });

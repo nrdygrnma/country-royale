@@ -1,0 +1,62 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "Country Royale Move Abroad Decision Engine" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e9]:
+            - heading "Country Royale" [level=1] [ref=e10]
+            - paragraph [ref=e11]: Move Abroad Decision Engine
+        - navigation [ref=e12]:
+          - navigation "Main" [ref=e13]:
+            - list [ref=e15]:
+              - listitem [ref=e16]:
+                - link "Home" [ref=e17] [cursor=pointer]:
+                  - /url: /
+                  - generic [ref=e19]: Home
+              - listitem [ref=e20]:
+                - link "Docs" [ref=e21] [cursor=pointer]:
+                  - /url: /docs
+                  - generic [ref=e23]: Docs
+              - listitem [ref=e24]:
+                - button "Admin" [active] [ref=e25] [cursor=pointer]:
+                  - generic [ref=e27]: Admin
+    - main [ref=e30]:
+      - generic [ref=e32]:
+        - generic [ref=e34]:
+          - heading "Discover your perfect match." [level=2] [ref=e35]
+          - paragraph [ref=e36]: Country Royale helps you make objective decisions about where to live, work, or travel. Define what matters, compare candidates, and see your rankings.
+          - generic [ref=e38]:
+            - textbox "What are you comparing?" [ref=e40]
+            - button "Get Started" [ref=e41] [cursor=pointer]
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - heading "Define Criteria" [level=3] [ref=e46]
+            - paragraph [ref=e47]: Pick from our library or create your own custom metrics.
+          - generic [ref=e48]:
+            - heading "Auto-Data Sync" [level=3] [ref=e51]
+            - paragraph [ref=e52]: Fetch real-world stats for GDP, cost of living, and more.
+          - generic [ref=e53]:
+            - heading "Detailed Reports" [level=3] [ref=e56]
+            - paragraph [ref=e57]: Get an executive summary and in-depth thematic analysis.
+  - generic:
+    - img
+  - generic:
+    - generic:
+      - generic:
+        - button "Go to parent" [disabled]
+        - button "Open in editor"
+        - button "Close"
+  - generic [ref=e58]:
+    - button "Toggle Nuxt DevTools" [ref=e59] [cursor=pointer]:
+      - img [ref=e60]
+    - generic "Page load time" [ref=e63]:
+      - generic [ref=e64]: "-"
+    - button "Toggle Component Inspector" [ref=e66] [cursor=pointer]:
+      - img [ref=e67]
+  - region "Notifications (F8)":
+    - list
+```

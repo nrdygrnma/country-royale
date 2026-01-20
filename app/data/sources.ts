@@ -128,8 +128,8 @@ export const DATA_SOURCES: DataSource[] = [
     max: 100,
   },
   {
-    label: "Wikipedia: Literacy Rate",
-    value: "wikipedia:literacy_rate",
+    label: "World Bank: Literacy Rate",
+    value: "worldbank:literacy_rate",
     description:
       "Percentage of people ages 15 and above who can both read and write with understanding a short simple statement about their everyday life.",
     min: 50,

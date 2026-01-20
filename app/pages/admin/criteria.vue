@@ -57,8 +57,6 @@
           <div
             v-if="criteriaByCategory[cat]?.length"
             class="flex items-center justify-between border-b-2 border-gray-100 dark:border-gray-800 pb-2"
-            @drop="onDropCriterion(cat)"
-            @dragover.prevent
           >
             <div class="flex items-center gap-2">
               <h2
@@ -70,6 +68,7 @@
                 {{ criteriaByCategory[cat]?.length || 0 }}
               </UBadge>
             </div>
+
             <div v-if="cat" class="flex gap-1">
               <UButton
                 color="neutral"
@@ -91,27 +90,21 @@
           <div
             v-if="criteriaByCategory[cat]?.length"
             class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm"
-            @drop="onDropCriterion(cat)"
-            @dragover.prevent
           >
             <UTable
+              v-model:sorting="sorting"
               :columns="columns"
               :data="criteriaByCategory[cat] || []"
               class="w-full"
             >
               <template #label-cell="{ row }">
                 <div
-                  class="font-bold text-gray-900 dark:text-white flex items-center justify-between gap-2 cursor-move group/row w-full"
-                  draggable="true"
-                  @dragstart="onDragStart($event, row.original as Criterion)"
+                  class="font-bold text-gray-900 dark:text-white flex items-center justify-between gap-2 group/row w-full"
                 >
-                  <div class="flex items-center gap-2">
-                    <UIcon
-                      class="w-4 h-4 text-gray-300 group-hover/row:text-gray-500"
-                      name="i-lucide-grip-vertical"
-                    />
+                  <div class="flex items-center gap-2 ml-1">
                     {{ (row.original as Criterion).label }}
                   </div>
+
                   <UIcon
                     v-if="(row.original as Criterion).sourceKey"
                     class="w-5 h-5 text-blue-500"
@@ -125,6 +118,7 @@
                   <span class="text-xs text-gray-500 line-clamp-1">{{
                     (row.original as Criterion).description || "—"
                   }}</span>
+
                   <UTooltip
                     :text="
                       DATA_SOURCES.find(
@@ -168,9 +162,9 @@
               </template>
 
               <template #weight-cell="{ row }">
-                <UBadge class="font-mono" size="xs" variant="subtle"
-                  >w{{ (row.original as Criterion).weight }}</UBadge
-                >
+                <UBadge class="font-mono" size="xs" variant="subtle">
+                  w{{ (row.original as Criterion).weight }}
+                </UBadge>
               </template>
 
               <template #direction-cell="{ row }">
@@ -244,7 +238,7 @@
       <AppModal
         v-model:open="isCriterionModalOpen"
         :title="editingCriterion ? 'Edit Criterion' : 'Add Criterion'"
-        description="Provide a label and description for the criterion"
+        aria-describedby="undefined"
       >
         <div class="p-4 space-y-4">
           <div class="grid grid-cols-2 gap-2">
@@ -276,8 +270,9 @@
           </div>
 
           <UFormField label="Description">
-            <UInput
+            <UTextarea
               v-model="criterionDraft.description"
+              :rows="2"
               class="w-full"
               placeholder="Optional details..."
             />
@@ -287,10 +282,7 @@
             <USelectMenu
               :items="[
                 { label: 'Manual Scoring', value: 'manual' },
-                {
-                  label: 'Auto-Data Mode',
-                  value: 'auto',
-                },
+                { label: 'Auto-Data Mode', value: 'auto' },
               ]"
               :model-value="
                 [
@@ -302,14 +294,6 @@
               @update:model-value="
                 (v: any) => {
                   criterionDraft.mode = v?.value;
-                  if (v?.value === 'auto' && !criterionDraft.sourceKey) {
-                    toast.add({
-                      title: 'Select a data source',
-                      description:
-                        'Auto-mode requires a data source to be selected.',
-                      color: 'warning',
-                    });
-                  }
                 }
               "
             />
@@ -330,6 +314,7 @@
                 }}
               </span>
             </template>
+
             <USelectMenu
               :items="[
                 { label: 'None (Manual only)', value: undefined },
@@ -359,11 +344,12 @@
               <template #label>
                 <div class="flex items-center justify-between w-full">
                   <span>Weight</span>
-                  <span class="text-primary-500 font-bold">{{
+                  <span class="text-primary-500 font-bold ml-2">{{
                     criterionDraft.weight
                   }}</span>
                 </div>
               </template>
+
               <USlider
                 v-model="criterionDraft.weight"
                 :max="10"
@@ -401,8 +387,10 @@
               color="neutral"
               variant="ghost"
               @click="isCriterionModalOpen = false"
-              >Cancel</UButton
             >
+              Cancel
+            </UButton>
+
             <UButton
               :disabled="
                 !criterionDraft.label ||
@@ -419,7 +407,7 @@
       <!-- Add Category Modal -->
       <AppModal
         v-model:open="isAddCategoryModalOpen"
-        description="Provide a category name"
+        aria-describedby="undefined"
         title="Add Category"
       >
         <div class="p-4">
@@ -432,14 +420,16 @@
             />
           </UFormField>
         </div>
+
         <template #footer>
           <div class="flex justify-end gap-3">
             <UButton
               color="neutral"
               variant="ghost"
               @click="isAddCategoryModalOpen = false"
-              >Cancel</UButton
             >
+              Cancel
+            </UButton>
             <UButton :disabled="!newCategoryName" @click="addCategory"
               >Add</UButton
             >
@@ -450,7 +440,7 @@
       <!-- Rename Category Modal -->
       <AppModal
         v-model:open="isRenameCategoryModalOpen"
-        description="Provide a new category name"
+        aria-describedby="undefined"
         title="Rename Category"
       >
         <div class="p-4">
@@ -463,17 +453,19 @@
             />
           </UFormField>
         </div>
+
         <template #footer>
           <div class="flex justify-end gap-3">
             <UButton
               color="neutral"
               variant="ghost"
               @click="isRenameCategoryModalOpen = false"
-              >Cancel</UButton
             >
-            <UButton :disabled="!renameCategoryName" @click="renameCategory"
-              >Rename</UButton
-            >
+              Cancel
+            </UButton>
+            <UButton :disabled="!renameCategoryName" @click="renameCategory">
+              Rename
+            </UButton>
           </div>
         </template>
       </AppModal>
@@ -484,7 +476,6 @@
         :confirm-color="confirmColor"
         :message="confirmMessage"
         :title="confirmTitle"
-        description="Confirm action"
         @confirm="onConfirm?.()"
       />
     </div>
@@ -492,13 +483,17 @@
 </template>
 
 <script lang="ts" setup>
+import { h, resolveComponent } from "vue";
 import type { Criterion } from "~/types/countryRoyale";
 import type { TableColumn } from "@nuxt/ui";
 
 import { DATA_SOURCES } from "~/data/sources";
 
+const UButton = resolveComponent("UButton");
+
 const store = useSessionsStore();
 const toast = useToast();
+
 const isHydrated = ref(false);
 const searchQuery = ref("");
 
@@ -506,12 +501,98 @@ onMounted(() => {
   isHydrated.value = true;
 });
 
+const sortColumn = ref("label");
+const sortDirection = ref<"asc" | "desc">("asc");
+
+const sorting = computed({
+  get: () => [{ id: sortColumn.value, desc: sortDirection.value === "desc" }],
+  set: (v) => {
+    const first = v?.[0];
+    if (first) {
+      sortColumn.value = first.id;
+      sortDirection.value = first.desc ? "desc" : "asc";
+    }
+  },
+});
+
 const columns: TableColumn<Criterion>[] = [
-  { id: "label", header: "Criterion" },
-  { id: "description", header: "Description" },
-  { id: "mode", header: "Mode" },
-  { id: "weight", header: "Weight" },
-  { id: "direction", header: "Direction" },
+  {
+    accessorKey: "label",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return h(UButton, {
+        color: "neutral",
+        variant: "ghost",
+        label: "Criterion",
+        icon: isSorted
+          ? isSorted === "asc"
+            ? "i-lucide-arrow-up-narrow-wide"
+            : "i-lucide-arrow-down-wide-narrow"
+          : "i-lucide-arrow-up-down",
+        class: "-mx-2.5",
+        onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    enableSorting: true,
+  },
+  { accessorKey: "description", header: "Description" },
+  {
+    accessorKey: "mode",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return h(UButton, {
+        color: "neutral",
+        variant: "ghost",
+        label: "Mode",
+        icon: isSorted
+          ? isSorted === "asc"
+            ? "i-lucide-arrow-up-narrow-wide"
+            : "i-lucide-arrow-down-wide-narrow"
+          : "i-lucide-arrow-up-down",
+        class: "-mx-2.5",
+        onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    enableSorting: true,
+  },
+  {
+    accessorKey: "weight",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return h(UButton, {
+        color: "neutral",
+        variant: "ghost",
+        label: "Weight",
+        icon: isSorted
+          ? isSorted === "asc"
+            ? "i-lucide-arrow-up-narrow-wide"
+            : "i-lucide-arrow-down-wide-narrow"
+          : "i-lucide-arrow-up-down",
+        class: "-mx-2.5",
+        onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    enableSorting: true,
+  },
+  {
+    accessorKey: "direction",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return h(UButton, {
+        color: "neutral",
+        variant: "ghost",
+        label: "Direction",
+        icon: isSorted
+          ? isSorted === "asc"
+            ? "i-lucide-arrow-up-narrow-wide"
+            : "i-lucide-arrow-down-wide-narrow"
+          : "i-lucide-arrow-up-down",
+        class: "-mx-2.5",
+        onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    enableSorting: true,
+  },
   { id: "actions" },
 ];
 
@@ -520,14 +601,39 @@ const allCategories = computed(() => {
 });
 
 const filteredCriteria = computed(() => {
-  if (!searchQuery.value.trim()) return store.masterCriteria;
-  const q = searchQuery.value.toLowerCase();
-  return store.masterCriteria.filter(
-    (c) =>
-      c.label.toLowerCase().includes(q) ||
-      c.description?.toLowerCase().includes(q) ||
-      c.category?.toLowerCase().includes(q),
-  );
+  let criteria = [...store.masterCriteria];
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase();
+    criteria = criteria.filter(
+      (c) =>
+        c.label.toLowerCase().includes(q) ||
+        c.description?.toLowerCase().includes(q) ||
+        c.category?.toLowerCase().includes(q),
+    );
+  }
+
+  // Sorting
+  const col = sortColumn.value;
+  const dir = sortDirection.value;
+
+  criteria.sort((a: any, b: any) => {
+    let valA = a[col];
+    let valB = b[col];
+
+    if (valA === undefined || valA === null) valA = "";
+    if (valB === undefined || valB === null) valB = "";
+
+    if (typeof valA === "string") {
+      valA = valA.toLowerCase();
+      valB = valB.toLowerCase();
+    }
+
+    if (valA < valB) return dir === "asc" ? -1 : 1;
+    if (valA > valB) return dir === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  return criteria;
 });
 
 const criteriaByCategory = computed(() => {
@@ -547,6 +653,7 @@ const categoryOptions = computed(() => {
 // Criterion CRUD
 const isCriterionModalOpen = ref(false);
 const editingCriterion = ref<Criterion | null>(null);
+
 const criterionDraft = reactive({
   label: "",
   description: "",
@@ -582,6 +689,15 @@ const openEditCriterion = (c: Criterion) => {
 };
 
 const saveCriterion = () => {
+  if (criterionDraft.mode === "auto" && !criterionDraft.sourceKey) {
+    toast.add({
+      title: "Validation Error",
+      description: "Auto-mode requires a data source to be selected.",
+      color: "error",
+    });
+    return;
+  }
+
   store.upsertMasterCriterion({
     id: editingCriterion.value?.id,
     label: criterionDraft.label,
@@ -592,7 +708,9 @@ const saveCriterion = () => {
     mode: criterionDraft.mode,
     sourceKey: criterionDraft.sourceKey,
   });
+
   isCriterionModalOpen.value = false;
+
   toast.add({
     title: editingCriterion.value ? "Criterion updated" : "Criterion added",
     color: "success",
@@ -669,27 +787,5 @@ const confirmDeleteCategory = (cat: string) => {
     isConfirmOpen.value = false;
   };
   isConfirmOpen.value = true;
-};
-
-// Drag and Drop
-const draggedCriterion = ref<Criterion | null>(null);
-
-const onDragStart = (e: DragEvent, c: Criterion) => {
-  draggedCriterion.value = c;
-  if (e.dataTransfer) {
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", c.id);
-  }
-};
-
-const onDropCriterion = (targetCategory: string) => {
-  if (draggedCriterion.value) {
-    store.moveMasterCriterion(
-      draggedCriterion.value.id,
-      targetCategory || undefined,
-    );
-    draggedCriterion.value = null;
-    toast.add({ title: "Criterion moved", color: "success" });
-  }
 };
 </script>

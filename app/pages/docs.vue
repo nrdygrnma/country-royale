@@ -83,7 +83,7 @@
               >
             </div>
             <p class="text-xs text-gray-500 leading-tight">
-              GDP, Stability, Internet Quality, Education, and Rule of Law.
+              GDP, Stability, Internet, Education, Risk, and Rule of Law.
             </p>
           </div>
           <div
@@ -215,12 +215,42 @@
                 <td class="p-3 text-gray-500">Lower is better</td>
               </tr>
               <tr class="text-sm">
+                <td class="p-3 font-medium">Literacy Rate</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  SE.ADT.LITR.ZS (Literacy rate)
+                </td>
+                <td class="p-3 text-gray-500">Higher is better</td>
+              </tr>
+              <tr class="text-sm">
                 <td class="p-3 font-medium">Rule of Law</td>
                 <td class="p-3 text-gray-500">
                   <span class="block text-gray-900 dark:text-white font-bold"
                     >World Bank</span
                   >
                   RL.EST (Rule of Law Index)
+                </td>
+                <td class="p-3 text-gray-500">Higher is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Disaster Risk</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  EN.CLC.MDAT.ZS (Disaster Risk Index)
+                </td>
+                <td class="p-3 text-gray-500">Lower is better</td>
+              </tr>
+              <tr class="text-sm">
+                <td class="p-3 font-medium">Migrant Stock</td>
+                <td class="p-3 text-gray-500">
+                  <span class="block text-gray-900 dark:text-white font-bold"
+                    >World Bank</span
+                  >
+                  SM.POP.TOTL.ZS (International migrant stock %)
                 </td>
                 <td class="p-3 text-gray-500">Higher is better</td>
               </tr>
@@ -235,6 +265,96 @@
         </p>
       </DocsSection>
 
+      <!-- Admin: Criteria Library -->
+      <DocsSection
+        id="admin-criteria"
+        icon="i-lucide-library"
+        title="Managing the Criteria Library"
+      >
+        <p>
+          The Criteria Library (found in the Admin section) is where you define
+          the global set of metrics used across all comparison sessions.
+        </p>
+
+        <div class="space-y-8 mt-8">
+          <div>
+            <h4
+              class="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-2"
+            >
+              <UIcon class="text-primary-500" name="i-lucide-plus-circle" />
+              Creating a New Criterion
+            </h4>
+            <p class="text-sm text-gray-500 mb-4">
+              To add a new metric to your library, click "Add Criterion" and
+              fill in the following:
+            </p>
+            <ul
+              class="list-disc list-inside text-sm text-gray-500 space-y-1 ml-4"
+            >
+              <li>
+                <strong>Label:</strong> The name of the criterion (e.g.,
+                "Quality of Life").
+              </li>
+              <li>
+                <strong>Category:</strong> Group similar criteria together
+                (e.g., "Economics", "Lifestyle").
+              </li>
+              <li>
+                <strong>Mode:</strong> Choose <em>Manual</em> for custom scores
+                or <em>Auto-Data</em> to fetch from an API.
+              </li>
+              <li>
+                <strong>Data Source:</strong> If using Auto-Data, select the
+                specific indicator (e.g., World Bank GDP).
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4
+              class="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-2"
+            >
+              <UIcon class="text-primary-500" name="i-lucide-arrow-up-down" />
+              Understanding "Better" Directions
+            </h4>
+            <p class="text-sm text-gray-500 mb-4">
+              Every criterion needs a logical direction so the engine knows how
+              to calculate the 1-10 score:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                class="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800"
+              >
+                <span
+                  class="font-bold text-green-700 dark:text-green-400 block mb-1"
+                  >Higher is Better</span
+                >
+                <p class="text-xs text-green-600 dark:text-green-500/80">
+                  Used for positive attributes like
+                  <strong>GDP per capita</strong>, or
+                  <strong>Internet Speed</strong>. The highest value in the
+                  group receives a 10.
+                </p>
+              </div>
+              <div
+                class="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800"
+              >
+                <span
+                  class="font-bold text-blue-700 dark:text-blue-400 block mb-1"
+                  >Lower is Better</span
+                >
+                <p class="text-xs text-blue-600 dark:text-blue-500/80">
+                  Used for negative attributes like
+                  <strong>Cost of Living</strong>,
+                  <strong>Safety Index</strong>, or <strong>Tax Rates</strong>.
+                  The lowest value in the group receives a 10.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DocsSection>
+
       <!-- Scoring Logic -->
       <DocsSection
         id="scoring"
@@ -246,10 +366,11 @@
           analysis (MCDA) approach.
         </p>
         <div class="space-y-4">
-          <DocsStep number="1" title="Normalization">
-            Raw values (like $60,000 GDP) are normalized into a 1-10 scale. We
-            use global benchmarks (e.g., $500 to $100,000) or relative
-            comparison depending on the source.
+          <DocsStep number="1" title="Direction & Normalization">
+            Raw values (like $60,000 GDP) are normalized into a 1-10 scale.
+            Based on the criterion's direction (Higher is Better vs Lower is
+            Better), we assign the best score (10) to the highest or lowest
+            value in the comparison set.
           </DocsStep>
           <DocsStep number="2" title="Weighting">
             Each criterion has a weight (1-10). If "Safety" is weight 10 and
@@ -322,6 +443,7 @@
 const sections = [
   { id: "getting-started", title: "Start", icon: "i-lucide-rocket" },
   { id: "data-sources", title: "Data & Sources", icon: "i-lucide-database" },
+  { id: "admin-criteria", title: "Criteria Library", icon: "i-lucide-library" },
   { id: "scoring", title: "Scoring", icon: "i-lucide-calculator" },
   { id: "reporting", title: "Reporting", icon: "i-lucide-file-text" },
   { id: "faq", title: "FAQ", icon: "i-lucide-help-circle" },

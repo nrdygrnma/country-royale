@@ -1,7 +1,7 @@
 <template>
-  <AppModal v-model:open="open" :description="description" :title="title">
-    <div v-if="message" class="p-4">
-      <p class="text-sm text-gray-500">{{ message }}</p>
+  <AppModal v-model:open="open" :title="title">
+    <div v-if="description || message" class="px-6 pb-4">
+      <p class="text-sm text-gray-500">{{ description || message }}</p>
     </div>
     <slot />
 

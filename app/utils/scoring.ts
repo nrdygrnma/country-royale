@@ -1,11 +1,23 @@
 import type { ComparisonSession } from "~/types/countryRoyale";
 
-const normalize = (
+export const normalize = (
+  rawScore: number,
+  _direction: "higher-is-better" | "lower-is-better",
+) => {
+  // IMPORTANT: The stored rawScore is already a "goodness" score from 1-10
+  // (where 10 is best), calculated during the scoring phase.
+  // Re-applying direction here would cause double inversion for "lower-is-better".
+  return (rawScore - 1) / 9; // 1..10 -> 0..1
+};
+
+/**
+ * Returns a score from 1-10 where 10 is always "best" regardless of direction.
+ */
+export const getAdjustedScore = (
   rawScore: number,
   direction: "higher-is-better" | "lower-is-better",
 ) => {
-  const norm = rawScore / 10; // 1..10 -> 0.1..1.0
-  return direction === "higher-is-better" ? norm : 1.1 - norm;
+  return Math.round((normalize(rawScore, direction) * 9 + 1) * 10) / 10;
 };
 
 const getRawScoreOrDefault = (

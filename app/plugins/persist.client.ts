@@ -18,11 +18,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         ? (JSON.parse(raw) as ComparisonSession[])
         : [];
 
-      const rawCustom = localStorage.getItem(`${STORAGE_KEY}:custom-countries`);
-      persisted.value.customCountries = rawCustom
-        ? (JSON.parse(rawCustom) as Country[])
-        : [];
-
       const rawMasterCountries = localStorage.getItem(
         `${STORAGE_KEY}:master-countries`,
       );
@@ -46,7 +41,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         : [];
     } catch {
       persisted.value.sessions = [];
-      persisted.value.customCountries = [];
       persisted.value.masterCountries = [];
       persisted.value.userPresets = [];
       persisted.value.masterCriteria = [];

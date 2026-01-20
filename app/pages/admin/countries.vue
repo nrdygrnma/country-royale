@@ -205,7 +205,6 @@
         :confirm-color="confirmColor"
         :message="confirmMessage"
         :title="confirmTitle"
-        description="Confirm action"
         @confirm="onConfirm?.()"
       />
     </div>

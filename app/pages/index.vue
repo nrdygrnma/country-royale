@@ -267,7 +267,7 @@
     <div v-if="isHydrated">
       <ConfirmModal
         v-model:open="isDeleteOpen"
-        :description="`Are you sure you want to delete \&quot;${store.sessions.find((s) => s.id === pendingDeleteId)?.title}\&quot;? This cannot be undone.`"
+        :message="`Are you sure you want to delete \&quot;${store.sessions.find((s) => s.id === pendingDeleteId)?.title}\&quot;? This cannot be undone.`"
         confirm-color="error"
         confirm-label="Delete"
         title="Delete this session?"
@@ -278,7 +278,7 @@
         v-model:open="isClearOpen"
         confirm-color="error"
         confirm-label="Clear all"
-        description="This deletes everything stored locally. This action is irreversible."
+        message="This deletes everything stored locally. This action is irreversible."
         title="Clear all sessions?"
         @confirm="confirmClearAll"
       />
@@ -308,7 +308,6 @@ const sortedSessions = computed(() => {
 const codeToName = computed(() => {
   const map = new Map<string, string>();
   store.masterCountries.forEach((c) => map.set(c.code, c.name));
-  store.customCountries.forEach((c) => map.set(c.code, c.name));
   return map;
 });
 

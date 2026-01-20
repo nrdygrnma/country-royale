@@ -99,8 +99,7 @@
         v-model:open="isDeleteModalOpen"
         confirm-color="error"
         confirm-label="Delete"
-        description="This will permanently delete this session and all its data."
-        message="Are you sure you want to delete this session?"
+        message="Are you sure you want to delete this session? This will permanently delete this session and all its data."
         title="Delete Session"
         @confirm="confirmDelete"
       />

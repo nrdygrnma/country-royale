@@ -28,17 +28,20 @@ visualize the best fit for your unique lifestyle.
 
 The automated scoring engine uses the following primary indicators from our trusted providers:
 
-| Category       | Indicator                                 | Source          | Direction        |
-|----------------|-------------------------------------------|-----------------|------------------|
-| Economy        | GDP per capita (current US$)              | World Bank      | Higher is better |
-| Safety         | Organized Crime Index (0-10)              | Local / OCIndex | Lower is better  |
-| Health         | Life expectancy at birth (years)          | World Bank      | Higher is better |
-| Stability      | Political Stability & Absence of Violence | World Bank      | Higher is better |
-| Money          | Cost of Living Index                      | Numbeo          | Lower is better  |
-| Legal          | Rule of Law Index                         | World Bank      | Higher is better |
-| Infrastructure | Fixed Broadband per 100 people            | World Bank      | Higher is better |
-| Environment    | Air Pollution (PM2.5) exposure            | World Bank      | Lower is better  |
-| Practicality   | Visa Ease Index (Heuristic)               | RestCountries   | Higher is better |
+| Category       | Indicator                                 | Source         | Direction        |
+|----------------|-------------------------------------------|----------------|------------------|
+| Economy        | GDP per capita (current US$)              | World Bank     | Higher is better |
+| Safety         | Crime Index / Safety (0-100)              | Local / Numbeo | Lower is better  |
+| Health         | Life expectancy at birth (years)          | World Bank     | Higher is better |
+| Stability      | Political Stability & Absence of Violence | World Bank     | Higher is better |
+| Risk           | Natural Disaster Risk Index               | World Bank     | Lower is better  |
+| Money          | Cost of Living Index                      | Numbeo         | Lower is better  |
+| Legal          | Rule of Law Index                         | World Bank     | Higher is better |
+| Infrastructure | Fixed Broadband per 100 people            | World Bank     | Higher is better |
+| Education      | Literacy Rate (% of people ages 15+)      | World Bank     | Higher is better |
+| Environment    | Air Pollution (PM2.5) exposure            | World Bank     | Lower is better  |
+| Practicality   | Visa Ease Index (Heuristic)               | RestCountries  | Higher is better |
+| Social         | Migrant Stock (% of population)           | World Bank     | Higher is better |
 
 For a complete list of indicators including population, languages, and business metrics, refer to the
 in-app [Documentation Page](https://country-royale.vercel.app/docs).
@@ -51,6 +54,7 @@ in-app [Documentation Page](https://country-royale.vercel.app/docs).
 - **Charts**: [ApexCharts](https://apexcharts.com/)
 - **Runtime/Package Manager**: [Bun](https://bun.sh/)
 - **Styling**: Tailwind CSS 4
+- **Testing**: [Jest](https://jestjs.io/) (API) & [Playwright](https://playwright.dev/) (E2E)
 
 ## 📦 Getting Started
 
@@ -82,6 +86,19 @@ bun run build
 bun run preview
 ```
 
+### 🧪 Testing
+
+```bash
+# Run unit & API tests with Jest
+bun run test
+
+# Run E2E tests with Playwright
+bun run test:e2e
+
+# Open Playwright UI
+bun run test:e2e:ui
+```
+
 ## 📂 Project Structure
 
 - `app/pages/`: Contains the main application routes (Sessions, Countries, Criteria, Scoring, Results).
@@ -91,6 +108,7 @@ bun run preview
 - `server/api/`: Nitro server routes for proxying third-party API requests (World Bank, REST Countries).
 - `app/data/`: Static data such as default criteria sets and country lists.
 - `app/types/`: TypeScript definitions for the core domain models.
+- `tests/`: Contains Jest API tests and Playwright E2E tests.
 
 ## 📄 License
 

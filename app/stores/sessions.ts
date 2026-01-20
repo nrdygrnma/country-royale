@@ -31,7 +31,6 @@ export const useSessionsStore = defineStore("sessions", () => {
   const sessions = ref<ComparisonSession[]>([]);
   const activeSessionId = ref<string | null>(null);
   const isHydrated = skipHydrate(ref(false));
-  const customCountries = ref<Country[]>([]);
   const masterCountries = ref<Country[]>([]);
   const userPresets = ref<CriteriaSet[]>([]);
   const masterCriteria = ref<Criterion[]>(
@@ -68,11 +67,6 @@ export const useSessionsStore = defineStore("sessions", () => {
     if (!activeSession.value) return;
     activeSession.value.title = title.trim() || "Untitled comparison";
     return true;
-  };
-
-  const addCustomCountry = (country: Country) => {
-    if (customCountries.value.some((c) => c.code === country.code)) return;
-    customCountries.value = [...customCountries.value, country];
   };
 
   const upsertMasterCountry = (country: Country) => {
@@ -272,19 +266,17 @@ export const useSessionsStore = defineStore("sessions", () => {
     masterCriteria.value = masterCriteria.value.map((c) =>
       c.id === id ? { ...c, category: newCategory } : c,
     );
+    saveToStorage();
   };
 
   const reorderMasterCriteria = (criteria: Criterion[]) => {
     masterCriteria.value = criteria;
+    saveToStorage();
   };
 
   const saveToStorage = () => {
     if (!import.meta.client) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.value));
-    localStorage.setItem(
-      `${STORAGE_KEY}:custom-countries`,
-      JSON.stringify(customCountries.value),
-    );
     localStorage.setItem(
       `${STORAGE_KEY}:master-countries`,
       JSON.stringify(masterCountries.value),
@@ -390,7 +382,6 @@ export const useSessionsStore = defineStore("sessions", () => {
 
   const clearAllSessions = () => {
     sessions.value = [];
-    customCountries.value = [];
     masterCountries.value = [];
     userPresets.value = [];
     activeSessionId.value = null;
@@ -407,7 +398,6 @@ export const useSessionsStore = defineStore("sessions", () => {
 
   const bootstrapFromPersisted = (data: {
     sessions: ComparisonSession[];
-    customCountries: Country[];
     masterCountries?: Country[];
     userPresets?: CriteriaSet[];
     masterCriteria?: Criterion[];
@@ -415,7 +405,6 @@ export const useSessionsStore = defineStore("sessions", () => {
     hydrated: boolean;
   }) => {
     sessions.value = data.sessions ?? [];
-    customCountries.value = data.customCountries ?? [];
     masterCountries.value = data.masterCountries ?? [];
     userPresets.value = data.userPresets ?? [];
 
@@ -466,20 +455,36 @@ export const useSessionsStore = defineStore("sessions", () => {
       masterCriteria.value = existingCriteria;
     }
 
-    // Migrate old source keys in existing sessions and master criteria
+    masterCriteria.value.forEach((c) => {
+      if (c.sourceKey === "ocindex:crime_index") {
+        c.sourceKey = "local:crime_index";
+      }
+      if (c.sourceKey === "wikipedia:literacy_rate") {
+        c.sourceKey = "worldbank:literacy_rate";
+      }
+    });
+
     sessions.value.forEach((s) => {
       s.criteria.forEach((c) => {
         if (c.sourceKey === "ocindex:crime_index") {
           c.sourceKey = "local:crime_index";
         }
+        if (c.sourceKey === "wikipedia:literacy_rate") {
+          c.sourceKey = "worldbank:literacy_rate";
+        }
       });
     });
 
-    masterCriteria.value.forEach((c) => {
-      if (c.sourceKey === "ocindex:crime_index") {
-        c.sourceKey = "local:crime_index";
-      }
-    });
+    // Migrate old customCountries if they exist in incoming data
+    const legacyCustom = (data as any).customCountries;
+    if (Array.isArray(legacyCustom) && legacyCustom.length > 0) {
+      legacyCustom.forEach((cc: Country) => {
+        const exists = masterCountries.value.some((mc) => mc.code === cc.code);
+        if (!exists) {
+          masterCountries.value.push(cc);
+        }
+      });
+    }
 
     if (!data.masterCategories || data.masterCategories.length === 0) {
       masterCategories.value = [...DEFAULT_CATEGORIES];
@@ -491,14 +496,7 @@ export const useSessionsStore = defineStore("sessions", () => {
   };
 
   watch(
-    [
-      sessions,
-      customCountries,
-      masterCountries,
-      userPresets,
-      masterCriteria,
-      masterCategories,
-    ],
+    [sessions, masterCountries, userPresets, masterCriteria, masterCategories],
     () => {
       if (!isHydrated.value) return;
       saveToStorage();
@@ -511,7 +509,6 @@ export const useSessionsStore = defineStore("sessions", () => {
     activeSessionId,
     activeSession,
     isHydrated,
-    customCountries,
     masterCountries,
     userPresets,
     masterCriteria,
@@ -521,7 +518,6 @@ export const useSessionsStore = defineStore("sessions", () => {
     setActiveSession,
     duplicateSession,
     setCountries,
-    addCustomCountry,
     upsertMasterCountry,
     deleteMasterCountry,
     upsertCriterion,

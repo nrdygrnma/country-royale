@@ -1,0 +1,91 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "Country Royale Move Abroad Decision Engine" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e9]:
+            - heading "Country Royale" [level=1] [ref=e10]
+            - paragraph [ref=e11]: Move Abroad Decision Engine
+        - navigation [ref=e12]:
+          - navigation "Main" [ref=e13]:
+            - list [ref=e15]:
+              - listitem [ref=e16]:
+                - link "Home" [ref=e17] [cursor=pointer]:
+                  - /url: /
+                  - generic [ref=e19]: Home
+              - listitem [ref=e20]:
+                - link "Docs" [ref=e21] [cursor=pointer]:
+                  - /url: /docs
+                  - generic [ref=e23]: Docs
+              - listitem [ref=e24]:
+                - button "Admin" [ref=e25] [cursor=pointer]:
+                  - generic [ref=e27]: Admin
+    - main [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - textbox "Session title" [ref=e42]: Test Session
+            - button [ref=e44] [cursor=pointer]
+          - generic [ref=e47]:
+            - button "Countries" [ref=e48] [cursor=pointer]:
+              - generic [ref=e50]: Countries
+            - button "Criteria" [ref=e51] [cursor=pointer]:
+              - generic [ref=e53]: Criteria
+            - button "Scoring" [ref=e54] [cursor=pointer]:
+              - generic [ref=e56]: Scoring
+            - button "Results" [ref=e57] [cursor=pointer]:
+              - generic [ref=e59]: Results
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - heading "Pick countries" [level=1] [ref=e67]
+            - paragraph [ref=e68]: Choose your candidates
+          - generic [ref=e69]:
+            - button "Back" [ref=e70] [cursor=pointer]
+            - button "Continue" [disabled] [ref=e71] [cursor=pointer]
+        - generic [ref=e72]:
+          - generic [ref=e76]:
+            - generic [ref=e78]: Candidate Selection
+            - button "Show popup" [ref=e79] [cursor=pointer]:
+              - generic [ref=e80]: Search and add countries...
+          - complementary [ref=e83]:
+            - generic [ref=e86]:
+              - heading "Tips" [level=3] [ref=e89]
+              - generic [ref=e90]:
+                - paragraph [ref=e91]:
+                  - strong [ref=e92]: Compare at least 2 countries
+                  - text: to see a meaningful ranking in the results.
+                - paragraph [ref=e93]:
+                  - strong [ref=e94]: Countries Management
+                  - text: ": You can also manage your global list of countries in the"
+                  - link "Countries Library" [ref=e95] [cursor=pointer]:
+                    - /url: /admin/countries
+                  - text: .
+                - paragraph [ref=e96]:
+                  - strong [ref=e97]: Custom countries
+                  - text: can be added if your specific destination isn't in the list—just type the name and press Enter.
+                - paragraph [ref=e98]:
+                  - strong [ref=e99]: Notes
+                  - text: are optional but helpful for the final report to remember your qualitative reasoning.
+  - generic:
+    - img
+  - generic:
+    - generic:
+      - generic:
+        - button "Go to parent" [disabled]
+        - button "Open in editor"
+        - button "Close"
+  - generic [ref=e100]:
+    - button "Toggle Nuxt DevTools" [ref=e101] [cursor=pointer]:
+      - img [ref=e102]
+    - generic "Page load time" [ref=e105]:
+      - generic [ref=e106]: "185"
+      - generic [ref=e107]: ms
+    - button "Toggle Component Inspector" [ref=e109] [cursor=pointer]:
+      - img [ref=e110]
+  - region "Notifications (F8)":
+    - list
+```

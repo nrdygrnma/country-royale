@@ -143,6 +143,99 @@
                       </p>
                     </div>
 
+                    <UCard v-if="topDrivers.length > 0" :ui="{ body: 'p-5' }">
+                      <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                          <div
+                            class="text-xs font-bold uppercase tracking-wider text-gray-500"
+                          >
+                            Key Drivers
+                          </div>
+                          <UTooltip text="Criterion impact on winner's lead">
+                            <UIcon
+                              class="w-3.5 h-3.5 text-gray-400"
+                              name="i-lucide-help-circle"
+                            />
+                          </UTooltip>
+                        </div>
+
+                        <div
+                          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                        >
+                          <div
+                            v-for="d in topDrivers"
+                            :key="d.criterionId"
+                            class="group relative flex flex-col gap-2 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all"
+                          >
+                            <div
+                              class="flex items-center justify-between gap-2"
+                            >
+                              <div
+                                class="text-xs font-bold truncate flex items-center gap-1.5"
+                              >
+                                {{ d.label }}
+                                <UTooltip
+                                  :text="
+                                    d.direction === 'lower-is-better'
+                                      ? 'Lower values are better for this criterion'
+                                      : 'Higher values are better for this criterion'
+                                  "
+                                >
+                                  <UIcon
+                                    :class="
+                                      d.direction === 'lower-is-better'
+                                        ? 'text-blue-500 dark:text-blue-400'
+                                        : 'text-orange-500 dark:text-orange-400'
+                                    "
+                                    :name="
+                                      d.direction === 'lower-is-better'
+                                        ? 'i-lucide-arrow-down-circle'
+                                        : 'i-lucide-arrow-up-circle'
+                                    "
+                                    class="w-4 h-4"
+                                  />
+                                </UTooltip>
+                              </div>
+                              <div
+                                :class="
+                                  d.scoreDelta >= 0
+                                    ? 'text-success-600'
+                                    : 'text-warning-600'
+                                "
+                                class="text-[11px] font-black tabular-nums"
+                              >
+                                {{ d.scoreDelta >= 0 ? "+" : ""
+                                }}{{ formatTotal(d.scoreDelta) }}
+                              </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                              <div
+                                class="text-[10px] text-gray-400 font-medium shrink-0"
+                              >
+                                {{ d.winnerRaw }} vs {{ d.runnerUpRaw }}
+                              </div>
+                              <div
+                                class="h-1.5 flex-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"
+                              >
+                                <div
+                                  :class="
+                                    d.deltaContribution >= 0
+                                      ? 'bg-success-500'
+                                      : 'bg-warning-500'
+                                  "
+                                  :style="{
+                                    width: `${Math.min(100, (Math.abs(d.scoreDelta) / 9) * 100)}%`,
+                                  }"
+                                  class="h-full rounded-full"
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </UCard>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div class="space-y-3">
                         <div
@@ -292,9 +385,9 @@
                                 </p>
                                 <p class="text-gray-500">
                                   Each spoke represents a criterion. Points
-                                  further from the center indicate higher raw
-                                  scores (1-10). Pink represents the overall
-                                  winner, while slate-gray is the runner-up.
+                                  further from the center indicate higher scores
+                                  (1-10). Pink represents the overall winner,
+                                  while slate-gray is the runner-up.
                                 </p>
                               </div>
                             </div>
@@ -380,68 +473,6 @@
                   </div>
                 </UCard>
 
-                <UCard v-if="topDrivers.length > 0" :ui="{ body: 'p-5' }">
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div
-                        class="text-xs font-bold uppercase tracking-wider text-gray-500"
-                      >
-                        Key Drivers
-                      </div>
-                      <UTooltip text="Criterion impact on winner's lead">
-                        <UIcon
-                          class="w-3.5 h-3.5 text-gray-400"
-                          name="i-lucide-help-circle"
-                        />
-                      </UTooltip>
-                    </div>
-
-                    <div class="space-y-2">
-                      <div
-                        v-for="d in topDrivers"
-                        :key="d.criterionId"
-                        class="group relative flex items-center justify-between gap-3 p-2 rounded-lg border border-transparent hover:border-gray-100 dark:hover:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all"
-                      >
-                        <div class="flex-1 min-w-0">
-                          <div class="text-xs font-medium truncate">
-                            {{ d.label }}
-                          </div>
-                          <div class="flex items-center gap-2 mt-0.5">
-                            <div
-                              class="h-1 flex-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"
-                            >
-                              <div
-                                :class="
-                                  d.deltaContribution >= 0
-                                    ? 'bg-success-500'
-                                    : 'bg-warning-500'
-                                "
-                                :style="{
-                                  width: `${Math.min(100, (Math.abs(d.deltaContribution) / 10) * 100)}%`,
-                                }"
-                                class="h-full rounded-full"
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="shrink-0 text-right">
-                          <div
-                            :class="
-                              d.deltaContribution >= 0
-                                ? 'text-success-600'
-                                : 'text-warning-600'
-                            "
-                            class="text-[10px] font-bold tabular-nums"
-                          >
-                            {{ d.deltaContribution >= 0 ? "+" : ""
-                            }}{{ formatTotal(d.deltaContribution) }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </UCard>
-
                 <UCard v-if="sensitivity" :ui="{ body: 'p-5' }">
                   <div class="space-y-3">
                     <div class="flex items-center justify-between">
@@ -508,43 +539,112 @@
                       <div
                         v-for="(r, idx) in ranking"
                         :key="r.countryCode"
-                        class="flex items-center justify-between gap-3 rounded-xl border border-gray-100 p-3 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+                        class="flex flex-col gap-2 rounded-xl border border-gray-100 p-3 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
                       >
-                        <div class="flex items-center gap-3 min-w-0">
-                          <div
-                            :class="[
-                              idx === 0
-                                ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700',
-                            ]"
-                            class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border shrink-0 shadow-sm"
-                          >
-                            {{ idx + 1 }}
-                          </div>
-                          <div class="min-w-0">
+                        <div class="flex items-center justify-between gap-3">
+                          <div class="flex items-center gap-3 min-w-0">
                             <div
-                              class="font-bold text-sm truncate group-hover:text-primary-600 transition-colors"
+                              :class="[
+                                idx === 0
+                                  ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                  : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700',
+                              ]"
+                              class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border shrink-0 shadow-sm"
                             >
-                              {{ nameFor(r.countryCode) }}
+                              {{ idx + 1 }}
                             </div>
-                            <div class="text-[10px] text-gray-400 font-medium">
-                              {{ r.countryCode }}
+                            <div class="min-w-0">
+                              <div
+                                class="font-bold text-sm truncate group-hover:text-primary-600 transition-colors"
+                              >
+                                {{ nameFor(r.countryCode) }}
+                              </div>
+                              <div
+                                class="text-[10px] text-gray-400 font-medium"
+                              >
+                                {{ r.countryCode }}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="flex items-center gap-3 shrink-0">
+                            <div class="text-right">
+                              <div
+                                class="text-sm font-black tabular-nums text-gray-900 dark:text-white"
+                              >
+                                {{ formatTotal(r.total) }}
+                              </div>
+                              <div
+                                v-if="idx > 0"
+                                class="text-[9px] text-gray-400 font-bold"
+                              >
+                                -{{ formatTotal(ranking[0]!.total - r.total) }}
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        <div class="flex items-center gap-3 shrink-0">
-                          <div class="text-right">
+                        <!-- Mini breakdown -->
+                        <div
+                          v-if="strengthsAndWeaknesses.has(r.countryCode)"
+                          class="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100 dark:border-gray-800"
+                        >
+                          <div class="space-y-1">
                             <div
-                              class="text-sm font-black tabular-nums text-gray-900 dark:text-white"
+                              class="text-[8px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1"
                             >
-                              {{ formatTotal(r.total) }}
+                              <UIcon
+                                class="w-2.5 h-2.5 text-success-500"
+                                name="i-lucide-trending-up"
+                              />
+                              Strengths
                             </div>
+                            <div class="flex flex-col gap-0.5">
+                              <div
+                                v-for="s in strengthsAndWeaknesses
+                                  .get(r.countryCode)
+                                  ?.strengths?.slice(0, 2)"
+                                :key="s.criterionId"
+                                class="flex items-center justify-between text-[9px]"
+                              >
+                                <span
+                                  class="text-gray-600 dark:text-gray-400 truncate mr-1"
+                                  >{{ s.label }}</span
+                                >
+                                <span
+                                  class="font-bold text-success-600 dark:text-success-400"
+                                  >{{ s.score }}</span
+                                >
+                              </div>
+                            </div>
+                          </div>
+                          <div class="space-y-1">
                             <div
-                              v-if="idx > 0"
-                              class="text-[9px] text-gray-400 font-bold"
+                              class="text-[8px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1"
                             >
-                              -{{ formatTotal(ranking[0]!.total - r.total) }}
+                              <UIcon
+                                class="w-2.5 h-2.5 text-warning-500"
+                                name="i-lucide-trending-down"
+                              />
+                              Weaknesses
+                            </div>
+                            <div class="flex flex-col gap-0.5">
+                              <div
+                                v-for="w in strengthsAndWeaknesses
+                                  .get(r.countryCode)
+                                  ?.weaknesses?.slice(0, 2)"
+                                :key="w.criterionId"
+                                class="flex items-center justify-between text-[9px]"
+                              >
+                                <span
+                                  class="text-gray-600 dark:text-gray-400 truncate mr-1"
+                                  >{{ w.label }}</span
+                                >
+                                <span
+                                  class="font-bold text-warning-600 dark:text-warning-400"
+                                  >{{ w.score }}</span
+                                >
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -568,7 +668,7 @@
                         Data Map
                       </div>
                       <div class="text-[10px] text-gray-400">
-                        Heatmap of raw scores (1-10)
+                        Heatmap of values (1-10)
                       </div>
                     </div>
 
@@ -780,13 +880,16 @@
                           >
                             <div
                               :style="{
-                                width: `${getRawScore(r.countryCode, c.id) * 10}%`,
+                                width: `${getAdjustedScore(getRawScore(r.countryCode, c.id), c.direction) * 10}%`,
                               }"
                               class="h-full bg-primary-500"
                             ></div>
                           </div>
                           <span class="font-bold tabular-nums w-4 text-right">{{
-                            getRawScore(r.countryCode, c.id)
+                            getAdjustedScore(
+                              getRawScore(r.countryCode, c.id),
+                              c.direction,
+                            )
                           }}</span>
                         </div>
                       </div>
@@ -808,12 +911,11 @@
       <!-- Print Only Report Template -->
       <div
         v-if="session"
-        class="hidden print:block space-y-8 bg-white text-gray-900 min-h-screen font-sans"
-        style="height: 100%"
+        class="hidden print:block bg-white text-gray-900 min-h-screen font-sans"
       >
         <!-- Page 1 Container -->
         <div
-          class="flex flex-col h-[27.7cm] max-h-[27.7cm] overflow-hidden box-sizing-border-box mb-8"
+          class="flex flex-col h-[27.7cm] max-h-[27.7cm] overflow-hidden box-sizing-border-box"
         >
           <!-- Header -->
           <div
@@ -848,7 +950,7 @@
               <h2 class="text-3xl font-black text-gray-900 leading-tight">
                 {{ summary?.headline }}
               </h2>
-              <div class="h-1.5 w-20 bg-primary-500 mt-4 rounded-full"></div>
+              <div class="h-1.5 w-20 bg-primary-500 mt-4 rounded-full" />
             </div>
 
             <p class="text-xl leading-relaxed text-gray-800 font-medium">
@@ -942,7 +1044,9 @@
         </div>
 
         <!-- Analysis & Chapters (Moved to Page 2) -->
-        <div class="space-y-4 break-before-page flex flex-col">
+        <div
+          class="space-y-4 break-before-page flex flex-col h-[27.7cm] max-h-[27.7cm] overflow-hidden"
+        >
           <div
             class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-6"
           >
@@ -963,7 +1067,7 @@
           <div
             v-for="(chapter, idx) in summary?.chapters"
             :key="idx"
-            class="p-6 rounded-2xl border border-gray-100 bg-gray-50/30 mb-6 break-inside-avoid"
+            class="p-6 rounded-2xl border border-gray-100 bg-gray-50/30 break-inside-avoid mt-6 first:mt-0"
           >
             <div class="flex items-center gap-3 mb-4">
               <div
@@ -997,7 +1101,9 @@
         </div>
 
         <!-- Full Rankings Table -->
-        <div class="space-y-4 break-before-page flex flex-col">
+        <div
+          class="space-y-4 break-before-page flex flex-col h-[27.7cm] max-h-[27.7cm] overflow-hidden"
+        >
           <div
             class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-6"
           >
@@ -1054,7 +1160,7 @@
 
           <!-- Footer Page 3 -->
           <div
-            class="pt-4 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+            class="pt-4 mb-2 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
           >
             <div>Page 3</div>
             <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
@@ -1064,7 +1170,7 @@
         <!-- Strengths & Weaknesses (New Page 4) -->
         <div
           v-if="strengthsAndWeaknesses.size > 0"
-          class="space-y-4 break-before-page flex flex-col"
+          class="space-y-4 break-before-page flex flex-col h-[27.7cm] max-h-[27.7cm] overflow-hidden"
         >
           <div
             class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-8"
@@ -1083,11 +1189,11 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-12">
+          <div class="grid grid-cols-1 gap-12 overflow-hidden">
             <div
               v-for="r in ranking.slice(0, 3)"
               :key="`sw-${r.countryCode}`"
-              class="space-y-4 break-inside-avoid"
+              class="space-y-4 break-inside-avoid mt-12 first:mt-0"
             >
               <div
                 class="flex items-center gap-3 border-b border-gray-100 pb-2"
@@ -1114,16 +1220,30 @@
                       v-for="s in strengthsAndWeaknesses.get(r.countryCode)
                         ?.strengths"
                       :key="s.criterionId"
-                      class="flex items-center justify-between p-2 bg-success-50 rounded-lg border border-success-100"
+                      class="flex flex-col gap-1 p-2 bg-success-50 rounded-lg border border-success-100"
                     >
-                      <span class="text-xs font-bold text-success-900">{{
-                        s.label
-                      }}</span>
-                      <span
-                        class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded border border-success-200 text-success-700"
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-success-900">{{
+                          s.label
+                        }}</span>
+                        <span
+                          class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded border border-success-200 text-success-700"
+                        >
+                          {{ s.adjustedScore }}/10
+                        </span>
+                      </div>
+                      <div
+                        class="text-[9px] text-success-600/70 font-medium flex items-center gap-1"
                       >
-                        {{ s.score }}/10
-                      </span>
+                        Value: {{ s.score }}
+                        <UIcon
+                          v-if="
+                            getDirection(s.criterionId) === 'lower-is-better'
+                          "
+                          class="w-2 h-2"
+                          name="i-lucide-arrow-down-circle"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1141,16 +1261,30 @@
                       v-for="w in strengthsAndWeaknesses.get(r.countryCode)
                         ?.weaknesses"
                       :key="w.criterionId"
-                      class="flex items-center justify-between p-2 bg-warning-50 rounded-lg border border-warning-100"
+                      class="flex flex-col gap-1 p-2 bg-warning-50 rounded-lg border border-warning-100"
                     >
-                      <span class="text-xs font-bold text-warning-900">{{
-                        w.label
-                      }}</span>
-                      <span
-                        class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded border border-warning-200 text-warning-700"
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-warning-900">{{
+                          w.label
+                        }}</span>
+                        <span
+                          class="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded border border-warning-200 text-warning-700"
+                        >
+                          {{ w.adjustedScore }}/10
+                        </span>
+                      </div>
+                      <div
+                        class="text-[9px] text-warning-600/70 font-medium flex items-center gap-1"
                       >
-                        {{ w.score }}/10
-                      </span>
+                        Value: {{ w.score }}
+                        <UIcon
+                          v-if="
+                            getDirection(w.criterionId) === 'lower-is-better'
+                          "
+                          class="w-2 h-2"
+                          name="i-lucide-arrow-down-circle"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1160,7 +1294,7 @@
 
           <!-- Footer Page 4 -->
           <div
-            class="pt-4 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+            class="pt-4 mb-2 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
           >
             <div>Page 4</div>
             <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
@@ -1168,7 +1302,9 @@
         </div>
 
         <!-- Detailed Analysis Per Country -->
-        <div class="space-y-6 break-before-page flex flex-col">
+        <div
+          class="space-y-6 break-before-page flex flex-col h-[27.7cm] max-h-[27.7cm] overflow-hidden"
+        >
           <div
             class="flex justify-between items-center border-b-2 border-primary-500 pb-2 mb-6"
           >
@@ -1185,47 +1321,54 @@
               </p>
             </div>
           </div>
-          <div
-            v-for="r in ranking"
-            :key="`print-detail-${r.countryCode}`"
-            class="break-inside-avoid py-4 border-b border-gray-50 last:border-0"
-          >
-            <div class="flex justify-between items-end mb-4">
-              <h4 class="font-black text-xl text-gray-900">
-                {{ nameFor(r.countryCode) }}
-              </h4>
-              <span class="text-sm font-bold text-primary-600"
-                >Score: {{ formatTotal(r.total) }}</span
-              >
-            </div>
+          <div class="space-y-4">
+            <div
+              v-for="r in ranking"
+              :key="`print-detail-${r.countryCode}`"
+              class="break-inside-avoid py-4 border-b border-gray-50 last:border-0"
+            >
+              <div class="flex justify-between items-end mb-4">
+                <h4 class="font-black text-xl text-gray-900">
+                  {{ nameFor(r.countryCode) }}
+                </h4>
+                <span class="text-sm font-bold text-primary-600"
+                  >Score: {{ formatTotal(r.total) }}</span
+                >
+              </div>
 
-            <div v-if="session.notes?.[r.countryCode]" class="mb-4">
-              <p class="text-xs italic text-gray-500 bg-gray-50 p-3 rounded-lg">
-                "{{ session.notes[r.countryCode] }}"
-              </p>
-            </div>
+              <div v-if="session.notes?.[r.countryCode]" class="mb-4">
+                <p
+                  class="text-xs italic text-gray-500 bg-gray-50 p-3 rounded-lg"
+                >
+                  "{{ session.notes[r.countryCode] }}"
+                </p>
+              </div>
 
-            <div class="grid grid-cols-2 gap-x-12 gap-y-2">
-              <div
-                v-for="c in sortedCriteria"
-                :key="`print-score-${r.countryCode}-${c.id}`"
-                class="flex justify-between items-center text-[10px] border-b border-gray-100 py-1"
-              >
-                <span class="text-gray-600">{{ c.label }}</span>
-                <div class="flex items-center gap-2">
-                  <div
-                    class="w-16 h-1 bg-gray-100 rounded-full overflow-hidden"
-                  >
+              <div class="grid grid-cols-2 gap-x-12 gap-y-2">
+                <div
+                  v-for="c in sortedCriteria"
+                  :key="`print-score-${r.countryCode}-${c.id}`"
+                  class="flex justify-between items-center text-[10px] border-b border-gray-100 py-1"
+                >
+                  <span class="text-gray-600">{{ c.label }}</span>
+                  <div class="flex items-center gap-2">
                     <div
-                      :style="{
-                        width: `${getRawScore(r.countryCode, c.id) * 10}%`,
-                      }"
-                      class="h-full bg-primary-500"
-                    ></div>
+                      class="w-16 h-1 bg-gray-100 rounded-full overflow-hidden"
+                    >
+                      <div
+                        :style="{
+                          width: `${getAdjustedScore(getRawScore(r.countryCode, c.id), c.direction) * 10}%`,
+                        }"
+                        class="h-full bg-primary-500"
+                      ></div>
+                    </div>
+                    <span class="font-bold w-4 text-right">{{
+                      getAdjustedScore(
+                        getRawScore(r.countryCode, c.id),
+                        c.direction,
+                      )
+                    }}</span>
                   </div>
-                  <span class="font-bold w-4 text-right">{{
-                    getRawScore(r.countryCode, c.id)
-                  }}</span>
                 </div>
               </div>
             </div>
@@ -1233,7 +1376,7 @@
 
           <!-- Footer Page 5 -->
           <div
-            class="pt-4 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
+            class="pt-4 mb-2 mt-auto border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 uppercase tracking-widest"
           >
             <div>Page 5</div>
             <div class="font-bold">{{ session.title }} • {{ session.id }}</div>
@@ -1328,7 +1471,7 @@ const extendedSummary = computed(() => {
   if (runnerUp && rName) {
     const margin = winner.total - runnerUp.total;
     const marginStatus =
-      margin > 10 ? "substantial" : margin > 5 ? "clear" : "marginal";
+      margin > 1.0 ? "substantial" : margin > 0.5 ? "clear" : "marginal";
     analysis += `It holds a ${marginStatus} lead over its closest competitor, ${rName}, with a total weighted score of ${formatTotal(winner.total)} versus ${formatTotal(runnerUp.total)}. `;
   }
 
@@ -1342,7 +1485,10 @@ const extendedSummary = computed(() => {
   if (topNegative.length > 0) {
     analysis += `Potential users should be aware that the selection of ${wName} involves accepting trade-offs in ${topNegative
       .slice(0, 2)
-      .map((d) => d.label)
+      .map((d) => {
+        const perf = d.direction === "lower-is-better" ? "higher" : "lower";
+        return `${d.label} (where others achieved ${perf} values)`;
+      })
       .join(
         " and ",
       )}, as these are areas where other candidates scored higher. `;
@@ -1416,7 +1562,7 @@ const isReady = computed(() => {
 const codeToName = computed(() => {
   const map = new Map<string, string>();
   for (const c of COUNTRIES) map.set(c.code, c.name);
-  for (const c of store.customCountries) map.set(c.code, c.name);
+  for (const c of store.masterCountries) map.set(c.code, c.name);
   return map;
 });
 
@@ -1463,7 +1609,7 @@ const radarSeries = computed(() => {
   return top2.map((r) => ({
     name: nameFor(r.countryCode),
     data: sortedCriteria.value.map((c: any) =>
-      getRawScore(r.countryCode, c.id),
+      getAdjustedScore(getRawScore(r.countryCode, c.id), c.direction),
     ),
   }));
 });
@@ -1479,24 +1625,19 @@ const radarComparisonInsight = computed(() => {
   const rName = nameFor(r.countryCode);
 
   const comparisons = sortedCriteria.value.map((c: any) => {
-    const wScore = getRawScore(w.countryCode, c.id);
-    const rScore = getRawScore(r.countryCode, c.id);
+    const wRaw = getRawScore(w.countryCode, c.id);
+    const rRaw = getRawScore(r.countryCode, c.id);
 
-    const wNormalized = wScore / 10;
-    const rNormalized = rScore / 10;
-
-    const wAdjusted =
-      c.direction === "higher-is-better" ? wNormalized : 1 - wNormalized;
-    const rAdjusted =
-      c.direction === "higher-is-better" ? rNormalized : 1 - rNormalized;
+    const wAdjusted = getAdjustedScore(wRaw, c.direction);
+    const rAdjusted = getAdjustedScore(rRaw, c.direction);
 
     return {
       label: c.label,
-      wScore,
-      rScore,
+      wScore: wAdjusted,
+      rScore: rAdjusted,
       wBetter: wAdjusted > rAdjusted,
       rBetter: rAdjusted > wAdjusted,
-      diff: Math.abs(wScore - rScore),
+      diff: Math.abs(wAdjusted - rAdjusted),
       direction: c.direction,
     };
   });
@@ -1592,6 +1733,13 @@ const formatTotal = (n: number) => {
   return n.toFixed(2);
 };
 
+const getAdjustedScore = (
+  rawScore: number,
+  _direction: "higher-is-better" | "lower-is-better",
+) => {
+  return Math.round(rawScore * 10) / 10;
+};
+
 const getRawScore = (countryCode: string, criterionId: string) => {
   const s = session.value;
   if (!s) return 5;
@@ -1599,6 +1747,11 @@ const getRawScore = (countryCode: string, criterionId: string) => {
     (x: any) => x.countryCode === countryCode && x.criterionId === criterionId,
   );
   return found?.score ?? 5;
+};
+
+const getDirection = (criterionId: string) => {
+  const c = session.value?.criteria.find((x: any) => x.id === criterionId);
+  return c?.direction ?? "higher-is-better";
 };
 
 const strengthsAndWeaknesses = computed(() => {
@@ -1610,27 +1763,33 @@ const strengthsAndWeaknesses = computed(() => {
   for (const r of ranking.value) {
     const items = s.criteria.map((c: any) => {
       const raw = getRawScore(r.countryCode, c.id);
-      const normalized = raw / 10;
-      const adjusted =
-        c.direction === "higher-is-better" ? normalized : 1 - normalized;
+      const normalized = normalize(raw, c.direction);
+      const adjustedScore = raw; // It's already the 1-10 goodness score
       return {
         criterionId: c.id,
         label: c.label,
-        adjusted,
+        adjusted: normalized,
         weight: c.weight,
         score: raw,
-        impact: adjusted * c.weight,
+        adjustedScore,
+        impact: normalized * c.weight,
       };
     });
 
     // Strength = high impact
     const sorted = [...items].sort((a, b) => b.impact - a.impact);
-    const strengths = sorted.slice(0, 3).filter((i) => i.adjusted >= 0.6);
+    const strengths = sorted.slice(0, 3).filter((i) => i.adjusted >= 0.5);
     // Weakness = low impact
     const weaknesses = [...items]
       .sort((a, b) => a.impact - b.impact)
-      .slice(0, 2)
-      .filter((i) => i.adjusted <= 0.4);
+      .slice(0, 3)
+      .filter((i) => i.adjusted < 0.5);
+
+    // If we have many strengths/weaknesses due to 0.5 threshold, we still only want top 3
+    // but the slice(0,3) above already does that after sorting by impact.
+    // However, for weaknesses, we want the ones with LOWEST impact (most negative or least positive).
+    // Actually, impact is normalized * weight. If normalized is low (close to 0), impact is low.
+    // So sorting by impact ascending gives the worst ones first. Correct.
 
     result.set(r.countryCode, { strengths, weaknesses });
   }
@@ -1737,7 +1896,6 @@ watch(sessionId, () => {
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
-    page-break-after: always;
   }
 }
 

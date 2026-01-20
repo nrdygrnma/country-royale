@@ -506,9 +506,8 @@
       <AppModal
         v-model:open="showSyncModal"
         :title="`Fetching Data: ${activeCriterion?.label}`"
-        description="Scraping and processing data for automated scoring"
       >
-        <div class="p-6 space-y-6">
+        <div class="p-4 space-y-6">
           <!-- Step 1: Loading -->
           <div
             v-if="syncStatus === 'loading'"
@@ -736,7 +735,7 @@
                     class="text-[10px] font-bold uppercase text-gray-400 tracking-widest border-b border-gray-100 dark:border-gray-800"
                   >
                     <th class="p-3">Country</th>
-                    <th class="p-3">Raw Value</th>
+                    <th class="p-3 text-center">Value</th>
                     <th class="p-3">Year</th>
                     <th class="p-3 text-right">Calculated Score</th>
                   </tr>
@@ -921,7 +920,7 @@ const timezoneOptions = [
   { label: "Mid-Atlantic (UTC-02:00)", value: -2 },
   { label: "Azores / Cape Verde (UTC-01:00)", value: -1 },
   { label: "London / Lisbon / Casablanca (UTC+00:00)", value: 0 },
-  { label: "Berlin / Paris / Rome / Madrid (UTC+01:00)", value: 1 },
+  { label: "Berlin / Paris / Vienna / Madrid (UTC+01:00)", value: 1 },
   { label: "Athens / Cairo / Johannesburg (UTC+02:00)", value: 2 },
   { label: "Moscow / Istanbul / Nairobi / Riyadh (UTC+03:00)", value: 3 },
   { label: "Tehran (UTC+03:30)", value: 3.5 },
@@ -1056,7 +1055,7 @@ const getInterpretation = computed(() => {
   ) {
     return `Using Life Expectancy as a proxy for the overall quality and accessibility of the healthcare system.`;
   }
-  if (sourceKey === "wikipedia:literacy_rate") {
+  if (sourceKey === "worldbank:literacy_rate") {
     return `A high literacy rate is an indicator of the country's investment in education and human development. Scores are normalized against ${modeText}.`;
   }
   if (sourceKey === "worldbank:disaster_risk") {
@@ -1067,7 +1066,7 @@ const getInterpretation = computed(() => {
   }
 
   if (sourceKey === "worldbank:political_stability") {
-    return `The Political Stability indicator measures perceptions of the likelihood of political instability and/or politically-motivated violence. Raw values typically range from -2.5 (weak) to 2.5 (strong). Higher values indicate a more stable and peaceful environment.`;
+    return `The Political Stability indicator measures perceptions of the likelihood of political instability and/or politically-motivated violence. Values typically range from -2.5 (weak) to 2.5 (strong). Higher values indicate a more stable and peaceful environment.`;
   }
   if (sourceKey === "worldbank:rule_of_law") {
     return `Based on the World Bank's Rule of Law indicator, which captures perceptions of the extent to which agents have confidence in and abide by the rules of society, including property rights and contract enforcement. Values range from -2.5 to 2.5.`;
@@ -1162,7 +1161,7 @@ const syncCurrentCriterion = async () => {
               // Higher rawValue -> Higher score
               score = 1 + normalized * 9;
             } else {
-              // Lower rawValue -> Higher score
+              // Lower rawValue -> Higher score (normalized = 0 means raw is min, which is best)
               score = 10 - normalized * 9;
             }
           } else {
@@ -1335,7 +1334,7 @@ const isReady = computed(() => {
 const codeToName = computed(() => {
   const map = new Map<string, string>();
   for (const c of COUNTRIES) map.set(c.code, c.name);
-  for (const c of store.customCountries) map.set(c.code, c.name);
+  for (const c of store.masterCountries) map.set(c.code, c.name);
   return map;
 });
 

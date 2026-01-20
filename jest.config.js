@@ -2,6 +2,7 @@
 export default {
   preset: "ts-jest",
   testEnvironment: "node",
+  testPathIgnorePatterns: ["/node_modules/", "/tests/e2e/"],
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {
     "^~/(.*)$": "<rootDir>/app/$1",

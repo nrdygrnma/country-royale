@@ -185,7 +185,7 @@
                         icon="i-lucide-trash-2"
                         size="sm"
                         variant="ghost"
-                        @click="store.removeCriterion(c.id)"
+                        @click="confirmDeleteCriterion(c)"
                       />
                     </UTooltip>
                   </div>
@@ -469,8 +469,7 @@
         v-model:open="isClearCriteriaOpen"
         confirm-color="error"
         confirm-label="Clear All"
-        description="This will remove ALL criteria from your session and clear all associated scores."
-        message="Are you sure you want to clear all criteria?"
+        message="This will remove ALL criteria from your session and clear all associated scores. Are you sure you want to clear all criteria?"
         title="Clear All Criteria?"
         @confirm="confirmClearCriteria"
       />
@@ -479,10 +478,18 @@
         v-model:open="isConfirmModalOpen"
         confirm-color="error"
         confirm-label="Replace Criteria"
-        description="Confirm action to replace criteria set"
         message="This will REPLACE your current criteria set and CLEAR ALL EXISTING SCORES for this session. Are you sure?"
         title="Apply Preset?"
         @confirm="confirmApplyPreset"
+      />
+
+      <ConfirmModal
+        v-model:open="isDeleteCriterionOpen"
+        :message="`Are you sure you want to delete \&quot;${pendingDeleteCriterion?.label}\&quot;? Associated scores will be lost.`"
+        confirm-color="error"
+        confirm-label="Delete"
+        title="Delete Criterion?"
+        @confirm="onConfirmDeleteCriterion"
       />
 
       <!-- Save Preset Modal -->
@@ -532,11 +539,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  CRITERIA_SETS,
-  type CriteriaSet,
-  type PresetCriterion,
-} from "~/data/criteria";
+import { CRITERIA_SETS, type CriteriaSet, type PresetCriterion } from "~/data/criteria";
 
 const toast = useToast();
 const store = useSessionsStore();
@@ -601,7 +604,26 @@ const sessionExists = computed(() =>
 );
 
 const isConfirmModalOpen = ref(false);
+const isDeleteCriterionOpen = ref(false);
+const pendingDeleteCriterion = ref<any>(null);
 const pendingPresetSet = ref<CriteriaSet | null>(null);
+
+const confirmDeleteCriterion = (c: any) => {
+  pendingDeleteCriterion.value = c;
+  isDeleteCriterionOpen.value = true;
+};
+
+const onConfirmDeleteCriterion = () => {
+  if (pendingDeleteCriterion.value) {
+    store.removeCriterion(pendingDeleteCriterion.value.id);
+    toast.add({
+      title: "Criterion deleted",
+      color: "neutral",
+    });
+  }
+  isDeleteCriterionOpen.value = false;
+  pendingDeleteCriterion.value = null;
+};
 
 const applyPresetSet = (set: CriteriaSet) => {
   pendingPresetSet.value = set;
@@ -621,12 +643,12 @@ const confirmApplyPreset = () => {
       );
 
       return {
+        id: crypto.randomUUID(),
+        label: c.label,
         description: c.description || master?.description || "",
         weight: c.weight,
         direction: c.direction || master?.direction || "higher-is-better",
         category: c.category || master?.category,
-        ...c,
-        id: crypto.randomUUID(),
         mode:
           c.mode ||
           master?.mode ||

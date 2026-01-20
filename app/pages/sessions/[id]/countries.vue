@@ -292,7 +292,12 @@ onMounted(() => {
 const sessionId = computed(() => String(route.params.id ?? ""));
 
 const allAvailableCountries = computed(() => {
-  return [...COUNTRIES, ...store.masterCountries, ...store.customCountries];
+  const all = [...COUNTRIES, ...store.masterCountries];
+  const unique = new Map<string, (typeof all)[0]>();
+  all.forEach((c) => unique.set(c.code, c));
+  return Array.from(unique.values()).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
 });
 
 // Build the dropdown items
@@ -362,10 +367,9 @@ const confirmAsCustom = () => {
 };
 
 const addAndSelect = (name: string, code: string, region: string) => {
-  // 1. Add to persistent store (both master and custom for compatibility)
+  // 1. Add to persistent store (masterCountries)
   const newCountry = { name, code, region };
   store.upsertMasterCountry(newCountry);
-  store.addCustomCountry(newCountry);
 
   // 2. Update the v-model
   const alreadySelected = selectedCodes.value.some(

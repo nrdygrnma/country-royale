@@ -52,9 +52,9 @@ export const buildDecisionSummary = (
   let summary = "";
   if (runnerUpName && margin) {
     const gap = margin.margin;
-    if (gap > 15) {
+    if (gap > 1.5) {
       summary = `${winnerName} dominates this comparison with a substantial lead of ${format(gap)} points. It consistently outperforms ${runnerUpName} across most high-priority criteria, suggesting a strong fit for your specific requirements.`;
-    } else if (gap > 5) {
+    } else if (gap > 0.5) {
       summary = `${winnerName} is a solid choice, maintaining a healthy margin over ${runnerUpName}. While ${runnerUpName} is competitive, ${winnerName}'s strengths in key areas make it the more balanced option for your goals.`;
     } else {
       summary = `It's a very tight race! ${winnerName} edges out ${runnerUpName} by a razor-thin margin of ${format(gap)} points. Your decision might come down to a single criterion or a qualitative "gut feeling" tie-breaker.`;
@@ -72,7 +72,7 @@ export const buildDecisionSummary = (
     const primaryDriver = positives[0];
     chapters.push({
       title: "The Winning Case",
-      content: `${winnerName}'s victory is primarily driven by its performance in ${names}. In these areas, it provides a cumulative advantage that ${runnerUpName || "other candidates"} struggle to match. Specifically, ${primaryDriver.label} contributes a significant +${format(primaryDriver.deltaContribution)} to the final score.`,
+      content: `${winnerName}'s victory is primarily driven by its performance in ${names}. In these areas, it provides a cumulative advantage that ${runnerUpName || "other candidates"} struggle to match. Specifically, ${primaryDriver.label} contributes a significant +${format(primaryDriver.scoreDelta)} score difference to the final result.`,
       type: "advantage",
     });
   }
@@ -80,9 +80,11 @@ export const buildDecisionSummary = (
   // Chapter 2: Comparative Trade-offs
   if (negatives.length > 0 && negatives[0]) {
     const topNeg = negatives[0];
+    const performanceWord =
+      topNeg.direction === "lower-is-better" ? "higher" : "lower";
     chapters.push({
       title: "Critical Trade-offs",
-      content: `No destination is perfect. Choosing ${winnerName} means accepting that ${runnerUpName || "competitors"} might actually be superior in ${topNeg.label}. If this specific factor is more critical than its weight suggest, you should carefully weigh it against ${winnerName}'s other benefits.`,
+      content: `No destination is perfect. Choosing ${winnerName} means accepting that ${runnerUpName || "competitors"} might actually be superior in ${topNeg.label} (where they achieved ${performanceWord} results). If this specific factor is more critical than its weight suggest, you should carefully weigh it against ${winnerName}'s other benefits.`,
       type: "risk",
     });
   }
@@ -103,7 +105,7 @@ export const buildDecisionSummary = (
           0,
         );
 
-        if (Math.abs(catImpact) > 1) {
+        if (Math.abs(catImpact) > 0.1) {
           return `${cat} is a ${catImpact > 0 ? "strength" : "relative weakness"} for ${winnerName}${catImpact > 0 ? ", helping" : " although it slightly trails"} compared to ${runnerUpName}.`;
         }
         return null;
@@ -123,15 +125,13 @@ export const buildDecisionSummary = (
     .slice(0, 3)
     .map(
       (p) =>
-        `${p.label} is a major advantage for ${winnerName}, providing a +${format(p.deltaContribution)} swing over ${runnerUpName}.`,
+        `${p.label} is a major advantage for ${winnerName}, providing a +${format(p.scoreDelta)} score lead over ${runnerUpName} for this criterion.`,
     );
 
-  const risks: string[] = negatives
-    .slice(0, 2)
-    .map(
-      (n) =>
-        `${runnerUpName} actually performs better in ${n.label} (Δ ${format(Math.abs(n.deltaContribution))}). If this matters more than you estimated, reconsider.`,
-    );
+  const risks: string[] = negatives.slice(0, 2).map((n) => {
+    const perf = n.direction === "lower-is-better" ? "higher" : "lower";
+    return `${runnerUpName} actually performs better in ${n.label} (achieving ${perf} values, Δ ${format(Math.abs(n.scoreDelta))} score points). If this matters more than you estimated, reconsider.`;
+  });
 
   const tradeoffs: string[] = [];
   if (positives.length > 0 && negatives.length > 0) {

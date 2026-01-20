@@ -1,5 +1,11 @@
 <template>
-  <UModal v-model:open="open" :description="description" :title="title">
+  <UModal
+    v-model:open="open"
+    :aria-describedby="undefined"
+    :description="description"
+    :title="title"
+  >
+    <template #description></template>
     <template #content>
       <UCard :ui="ui">
         <template #header>
@@ -13,6 +19,10 @@
             />
           </div>
         </template>
+
+        <div v-if="description" class="px-6 py-2">
+          <p class="text-sm text-gray-500">{{ description }}</p>
+        </div>
 
         <slot />
 

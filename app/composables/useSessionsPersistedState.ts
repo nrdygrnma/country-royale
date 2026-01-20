@@ -8,7 +8,6 @@ import type { CriteriaSet } from "~/data/criteria";
 export const useSessionsPersistedState = () =>
   useState<{
     sessions: ComparisonSession[];
-    customCountries: Country[];
     masterCountries: Country[];
     userPresets: CriteriaSet[];
     masterCriteria: Criterion[];
@@ -16,7 +15,6 @@ export const useSessionsPersistedState = () =>
     hydrated: boolean;
   }>("country-royale:persisted", () => ({
     sessions: [],
-    customCountries: [],
     masterCountries: [],
     userPresets: [],
     masterCriteria: [],

@@ -200,12 +200,12 @@ export const PRESET_CRITERIA: PresetCriterion[] = [
   },
   {
     label: "Literacy rate",
-    description: "Percentage of people who can read and write",
+    description: "Percentage of people who can read and write (World Bank)",
     weight: 5,
     direction: "higher-is-better",
     category: "Health & Environment",
     mode: "auto",
-    sourceKey: "wikipedia:literacy_rate",
+    sourceKey: "worldbank:literacy_rate",
   },
   {
     label: "Climate fit",
